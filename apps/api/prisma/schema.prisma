@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Prioridade {
+  ESSENCIAL
+  IMPORTANTE
+  NORMAL
+}
+
+enum TipoConta {
+  RECORRENTE_VARIAVEL
+  RECORRENTE_FIXA
+  PARCELADA
+}
+
+enum StatusLancamento {
+  PENDENTE
+  PAGA
+  CANCELADA
+}
+
+model Conta {
+  id                String       @id @default(cuid())
+  nome              String
+  tipo              TipoConta
+  prioridade        Prioridade
+  diaVencimento     Int
+  valorCentavos     Int?
+  totalParcelas     Int?
+  primeiraParcela   String? // AAAA-MM
+  inicioCompetencia String // mês de cadastro (AAAA-MM, fuso SP)
+  linkSegundaVia    String?
+  ativa             Boolean      @default(true)
+  lancamentos       Lancamento[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Lancamento {
+  id              String           @id @default(cuid())
+  contaId         String?
+  conta           Conta?           @relation(fields: [contaId], references: [id])
+  nome            String
+  prioridade      Prioridade
+  competencia     String // AAAA-MM
+  vencimento      String // AAAA-MM-DD
+  valorCentavos   Int?
+  numeroParcela   Int?
+  status          StatusLancamento @default(PENDENTE)
+  pagoEm          DateTime?
+  pagoPorId       String?
+  pagoPor         User?            @relation(fields: [pagoPorId], references: [id])
+  codigoPagamento String?
+  observacao      String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([contaId, competencia])
+  @@index([competencia, status])
+}
+
+model User {
+  id               String       @id
+  name             String
+  email            String
+  emailVerified    Boolean      @default(false)
+  image            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  sessions         Session[]
+  accounts         Account[]
+  lancamentosPagos Lancamento[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model RateLimit {
+  id          String @id
+  key         String
+  count       Int
+  lastRequest BigInt
+
+  @@unique([key])
+  @@map("rateLimit")
+}

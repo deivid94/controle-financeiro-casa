@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+pnpm-lock.yaml
+.superpowers
+docs
+apps/api/src/generated

@@ -83,7 +83,7 @@ Uma **esporádica** é um lançamento sem conta-modelo, com nome e prioridade pr
 - Pode-se consultar e gerar o **próximo mês**, para quem quiser adiantar pagamentos ("posso fazer antes" **[usuário]**). Meses além do próximo não são gerados.
 - **Recorrente fixa:** o valor vem do valor padrão da conta.
 - **Recorrente variável:** o valor fica vazio até o usuário digitar.
-- **Parcelada:** número da parcela = (meses desde o mês da primeira parcela) + 1. Se passar do total, nada é gerado. "Faltam Y" = total − parcelas já pagas.
+- **Parcelada:** número da parcela = (meses desde o mês da primeira parcela) + 1. Se passar do total, nada é gerado. "Faltam Y" = parcelas a partir do cadastro no app que ainda não foram pagas = (total − número da primeira parcela gerada + 1) − parcelas pagas. Parcelas anteriores ao cadastro não contam como faltando; uma parcela cancelada continua contando.
 - **Dia de vencimento maior que o último dia do mês** (por exemplo, dia 31 em fevereiro): usa o último dia do mês.
 - Alterar uma conta (valor, prioridade, nome) afeta só os lançamentos **ainda não gerados**. Os já gerados podem ser editados individualmente.
 - Desativar uma conta para de gerar lançamentos novos e não apaga o histórico.

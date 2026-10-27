@@ -1,1 +1,10 @@
 .superpowers/
+node_modules/
+dist/
+coverage/
+.vercel/
+.env*
+!.env.example
+!apps/api/.env.test
+apps/api/src/generated/
+*.tsbuildinfo
