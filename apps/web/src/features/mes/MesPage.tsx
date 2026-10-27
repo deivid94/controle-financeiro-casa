@@ -9,22 +9,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, Navigate, useParams } from 'react-router';
 import { buttonVariants } from '@/components/ui/button';
 import { ApiError } from '@/lib/api';
+import { nomeDoMes } from '@/lib/formato';
 import { cn } from '@/lib/utils';
 import { LancamentoCard } from './LancamentoCard';
 import { useMes } from './queries';
 import { ResumoMes } from './ResumoMes';
-
-/** "outubro de 2026"; UTC dos dois lados para não deslocar o mês por fuso. */
-function nomeDoMes(competencia: string): string {
-  const data = new Date(
-    Date.UTC(Number(competencia.slice(0, 4)), Number(competencia.slice(5, 7)) - 1, 1),
-  );
-  return new Intl.DateTimeFormat('pt-BR', {
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(data);
-}
 
 function Secao({
   titulo,
