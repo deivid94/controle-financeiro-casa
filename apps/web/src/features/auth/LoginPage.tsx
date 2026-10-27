@@ -47,7 +47,6 @@ export function LoginPage() {
                 type="email"
                 autoComplete="username"
                 required
-                className="h-12"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -61,7 +60,6 @@ export function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="h-12"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
               />
@@ -71,7 +69,7 @@ export function LoginPage() {
                 {erro}
               </p>
             )}
-            <Button type="submit" className="h-12" disabled={enviando}>
+            <Button type="submit" disabled={enviando}>
               Entrar
             </Button>
           </form>

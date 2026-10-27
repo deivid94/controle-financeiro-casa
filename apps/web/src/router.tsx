@@ -1,6 +1,6 @@
-import { competenciaAtual } from '@casa/shared';
-import { createBrowserRouter, Navigate } from 'react-router';
+import { createBrowserRouter } from 'react-router';
 import { AppLayout } from '@/components/AppLayout';
+import { RedirecionarMesAtual } from '@/components/RedirecionarMesAtual';
 import { LoginPage } from '@/features/auth/LoginPage';
 
 // Páginas reais chegam nas próximas tarefas; por ora, só o título.
@@ -13,7 +13,7 @@ export const router = createBrowserRouter([
   {
     element: <AppLayout />,
     children: [
-      { path: '/', element: <Navigate to={`/mes/${competenciaAtual()}`} replace /> },
+      { path: '/', element: <RedirecionarMesAtual /> },
       { path: '/mes/:competencia', element: <Pagina titulo="Mês" /> },
       { path: '/historico', element: <Pagina titulo="Histórico" /> },
       { path: '/contas', element: <Pagina titulo="Contas" /> },
