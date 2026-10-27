@@ -5,6 +5,7 @@ import {
 } from '@fastify/type-provider-zod';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { contasRoutes } from './modules/contas/routes.js';
+import { mesesRoutes } from './modules/meses/routes.js';
 import { registrarAuth } from './plugins/auth.js';
 import { registrarErrorHandler } from './plugins/error-handler.js';
 
@@ -19,6 +20,7 @@ export function buildApp(opts: { logger?: boolean } = {}): Promise<FastifyInstan
   app.withTypeProvider<ZodTypeProvider>().get('/api/health', () => ({ ok: true }));
 
   void app.register(contasRoutes);
+  void app.register(mesesRoutes);
 
   return Promise.resolve(app);
 }
