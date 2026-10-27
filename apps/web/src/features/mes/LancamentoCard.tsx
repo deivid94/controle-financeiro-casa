@@ -1,7 +1,6 @@
 import { formatBRL, type LancamentoItem } from '@casa/shared';
 import { ExternalLink, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { CopyButton } from '@/components/CopyButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +35,11 @@ const formatadorPagamento = new Intl.DateTimeFormat('pt-BR', {
   timeZone: 'America/Sao_Paulo',
 });
 
+/** `R$ 1.500,00` → `1.500,00` (para preencher o campo). */
+function semSimbolo(centavos: number): string {
+  return formatBRL(centavos).replace('R$ ', '');
+}
+
 function Valor({ item }: { item: LancamentoItem }) {
   if (item.valorCentavos !== null) {
     return <span className="text-lg font-semibold">{formatBRL(item.valorCentavos)}</span>;
@@ -66,12 +70,12 @@ export function LancamentoCard({ item }: { item: LancamentoItem }) {
   const prioridade = PRIORIDADE[item.prioridade];
 
   function pagarComValor(valorCentavos?: number) {
-    pagar.mutate(valorCentavos === undefined ? { id: item.id } : { id: item.id, valorCentavos }, {
-      onSuccess: () =>
-        toast(`${item.nome} paga`, {
-          action: { label: 'Desfazer', onClick: () => desfazer.mutate({ id: item.id }) },
-        }),
-    });
+    if (pagar.isPending) return;
+    pagar.mutate(
+      valorCentavos === undefined
+        ? { id: item.id, nome: item.nome }
+        : { id: item.id, nome: item.nome, valorCentavos },
+    );
   }
 
   function aoPagar() {
@@ -185,10 +189,7 @@ export function LancamentoCard({ item }: { item: LancamentoItem }) {
                 disabled={desfazer.isPending}
                 onClick={() => {
                   fecharMenu();
-                  desfazer.mutate(
-                    { id: item.id },
-                    { onSuccess: () => toast(`${item.nome} voltou para pendente`) },
-                  );
+                  desfazer.mutate({ id: item.id, nome: item.nome });
                 }}
               >
                 Desfazer
@@ -203,12 +204,18 @@ export function LancamentoCard({ item }: { item: LancamentoItem }) {
         open={pedindoValorParaPagar}
         onOpenChange={setPedindoValorParaPagar}
         onConfirmar={pagarComValor}
+        pendente={pagar.isPending}
+        valorInicial={
+          item.valorEstimadoCentavos === null ? '' : semSimbolo(item.valorEstimadoCentavos)
+        }
       />
       <ValorDialog
         titulo={`Editar valor de ${item.nome}`}
         open={editandoValor}
         onOpenChange={setEditandoValor}
         onConfirmar={(valorCentavos) => editar.mutate({ id: item.id, valorCentavos })}
+        pendente={editar.isPending}
+        valorInicial={item.valorCentavos === null ? '' : semSimbolo(item.valorCentavos)}
       />
       <CodigoDialog
         open={editandoCodigo}
@@ -232,10 +239,7 @@ export function LancamentoCard({ item }: { item: LancamentoItem }) {
               disabled={cancelar.isPending}
               onClick={() => {
                 setConfirmandoCancelar(false);
-                cancelar.mutate(
-                  { id: item.id },
-                  { onSuccess: () => toast(`${item.nome} cancelada`) },
-                );
+                cancelar.mutate({ id: item.id, nome: item.nome });
               }}
             >
               Continuar

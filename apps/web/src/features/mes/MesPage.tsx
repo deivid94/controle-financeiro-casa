@@ -1,6 +1,12 @@
-import { competenciaAtual, formatBRL, somarMeses, type LancamentoItem } from '@casa/shared';
+import {
+  competenciaAtual,
+  competenciaSchema,
+  formatBRL,
+  somarMeses,
+  type LancamentoItem,
+} from '@casa/shared';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Link, useParams } from 'react-router';
+import { Link, Navigate, useParams } from 'react-router';
 import { buttonVariants } from '@/components/ui/button';
 import { ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -46,7 +52,15 @@ function Secao({
 }
 
 export function MesPage() {
-  const { competencia = competenciaAtual() } = useParams();
+  const { competencia } = useParams();
+  // Competência malformada na URL (ex.: /mes/abc): volta para o mês atual em vez de quebrar.
+  if (!competenciaSchema.safeParse(competencia).success) {
+    return <Navigate to={`/mes/${competenciaAtual()}`} replace />;
+  }
+  return <MesConteudo competencia={competencia as string} />;
+}
+
+function MesConteudo({ competencia }: { competencia: string }) {
   const atual = competenciaAtual();
   const { data, isPending, error } = useMes(competencia);
 

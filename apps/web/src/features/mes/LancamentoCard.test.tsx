@@ -65,7 +65,7 @@ describe('LancamentoCard', () => {
     await user.click(screen.getByRole('button', { name: 'Pagar' }));
 
     expect(mocks.pagar).toHaveBeenCalledTimes(1);
-    expect(mocks.pagar).toHaveBeenCalledWith({ id: 'l1' });
+    expect(mocks.pagar).toHaveBeenCalledWith({ id: 'l1', nome: 'Aluguel' });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
@@ -82,7 +82,7 @@ describe('LancamentoCard', () => {
       await user.type(await screen.findByRole('textbox'), '189,90');
       await user.click(screen.getByRole('button', { name: 'Confirmar' }));
 
-      expect(mocks.pagar).toHaveBeenCalledWith({ id: 'l2', valorCentavos: 18990 });
+      expect(mocks.pagar).toHaveBeenCalledWith({ id: 'l2', nome: 'Luz', valorCentavos: 18990 });
     });
 
     it('Enter confirma o valor', async () => {
@@ -92,7 +92,7 @@ describe('LancamentoCard', () => {
       await user.click(screen.getByRole('button', { name: 'Pagar' }));
       await user.type(await screen.findByRole('textbox'), '50{Enter}');
 
-      expect(mocks.pagar).toHaveBeenCalledWith({ id: 'l2', valorCentavos: 5000 });
+      expect(mocks.pagar).toHaveBeenCalledWith({ id: 'l2', nome: 'Luz', valorCentavos: 5000 });
     });
 
     it('mostra "Valor inválido" e não chama a API com texto inválido', async () => {
@@ -169,7 +169,7 @@ describe('LancamentoCard', () => {
     expect(mocks.cancelar).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
-    expect(mocks.cancelar).toHaveBeenCalledWith({ id: 'l1' }, expect.anything());
+    expect(mocks.cancelar).toHaveBeenCalledWith({ id: 'l1', nome: 'Aluguel' });
   });
 
   it('em conta paga mostra quem pagou e permite desfazer', async () => {
@@ -188,6 +188,37 @@ describe('LancamentoCard', () => {
 
     await user.click(screen.getByRole('button', { name: 'Mais ações' }));
     await user.click(screen.getByRole('button', { name: 'Desfazer' }));
-    expect(mocks.desfazer).toHaveBeenCalledWith({ id: 'l1' }, expect.anything());
+    expect(mocks.desfazer).toHaveBeenCalledWith({ id: 'l1', nome: 'Aluguel' });
+  });
+
+  it('sugere a estimativa no diálogo ao pagar variável sem valor', async () => {
+    const user = userEvent.setup();
+    render(
+      <LancamentoCard
+        item={item({
+          id: 'l3',
+          tipo: 'RECORRENTE_VARIAVEL',
+          nome: 'Luz',
+          valorCentavos: null,
+          valorEstimadoCentavos: 21000,
+        })}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Pagar' }));
+    expect(await screen.findByRole('textbox')).toHaveValue('210,00');
+    await user.click(screen.getByRole('button', { name: 'Confirmar' }));
+
+    expect(mocks.pagar).toHaveBeenCalledWith({ id: 'l3', nome: 'Luz', valorCentavos: 21000 });
+  });
+
+  it('preenche o valor atual ao editar valor', async () => {
+    const user = userEvent.setup();
+    render(<LancamentoCard item={item()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Mais ações' }));
+    await user.click(screen.getByRole('button', { name: 'Editar valor' }));
+
+    expect(await screen.findByRole('textbox')).toHaveValue('1.500,00');
   });
 });

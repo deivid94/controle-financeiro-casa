@@ -16,15 +16,24 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   onConfirmar: (valorCentavos: number) => void;
   valorInicial?: string;
+  pendente?: boolean;
 };
 
-export function ValorDialog({ titulo, open, onOpenChange, onConfirmar, valorInicial = '' }: Props) {
+export function ValorDialog({
+  titulo,
+  open,
+  onOpenChange,
+  onConfirmar,
+  valorInicial = '',
+  pendente = false,
+}: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <ValorForm
           titulo={titulo}
           valorInicial={valorInicial}
+          pendente={pendente}
           onConfirmar={(v) => {
             onConfirmar(v);
             onOpenChange(false);
@@ -39,10 +48,12 @@ export function ValorDialog({ titulo, open, onOpenChange, onConfirmar, valorInic
 function ValorForm({
   titulo,
   valorInicial,
+  pendente,
   onConfirmar,
 }: {
   titulo: string;
   valorInicial: string;
+  pendente: boolean;
   onConfirmar: (valorCentavos: number) => void;
 }) {
   const [texto, setTexto] = useState(valorInicial);
@@ -50,6 +61,7 @@ function ValorForm({
 
   function enviar(evento: FormEvent) {
     evento.preventDefault();
+    if (pendente) return;
     const centavos = parseValorBRL(texto);
     if (centavos === null) {
       setErro(true);
@@ -84,7 +96,9 @@ function ValorForm({
         )}
       </div>
       <DialogFooter>
-        <Button type="submit">Confirmar</Button>
+        <Button type="submit" disabled={pendente}>
+          Confirmar
+        </Button>
       </DialogFooter>
     </form>
   );
