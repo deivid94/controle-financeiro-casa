@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { garantirLancamentos } from '../src/modules/meses/service.js';
 import { prisma } from '../src/lib/prisma.js';
 import { criarAppDeTeste, limparBanco, loginComo } from './helpers.js';
 
@@ -165,6 +166,48 @@ describe('GET /api/meses/:competencia', () => {
     const res = (await get('/api/meses/2026-10')).json();
     expect(res.aPagar).toHaveLength(1);
     expect(res.aPagar[0].parcela).toEqual({ numero: 9, total: 10, faltam: 2 });
+  });
+
+  const iptu = {
+    tipo: 'PARCELADA',
+    nome: 'IPTU',
+    prioridade: 'IMPORTANTE',
+    diaVencimento: 10,
+    valorCentavos: 30000,
+    totalParcelas: 10,
+    primeiraParcela: '2026-02',
+  };
+
+  it('parcela paga reduz faltam na parcela seguinte', async () => {
+    await criarConta(iptu);
+    await get('/api/meses/2026-11');
+    await prisma.lancamento.updateMany({
+      where: { competencia: '2026-10' },
+      data: { status: 'PAGA', pagoEm: new Date() },
+    });
+    const res = (await get('/api/meses/2026-11')).json();
+    expect(res.aPagar[0].parcela).toEqual({ numero: 10, total: 10, faltam: 1 });
+  });
+
+  it('parcela cancelada continua contando como faltando', async () => {
+    await criarConta(iptu);
+    await get('/api/meses/2026-11');
+    await prisma.lancamento.updateMany({
+      where: { competencia: '2026-10' },
+      data: { status: 'CANCELADA' },
+    });
+    const res = (await get('/api/meses/2026-11')).json();
+    expect(res.aPagar[0].parcela).toEqual({ numero: 10, total: 10, faltam: 2 });
+  });
+
+  it('garantirLancamentos concorrente não duplica nem falha', async () => {
+    await criarConta(fixa);
+    await Promise.all([
+      garantirLancamentos('2026-10'),
+      garantirLancamentos('2026-10'),
+      garantirLancamentos('2026-10'),
+    ]);
+    expect(await prisma.lancamento.count()).toBe(1);
   });
 
   it('conta desativada: o pendente já gerado continua e nada novo nasce', async () => {
