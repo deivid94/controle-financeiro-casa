@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, Navigate, useParams } from 'react-router';
 import { buttonVariants } from '@/components/ui/button';
 import { ApiError } from '@/lib/api';
-import { nomeDoMes } from '@/lib/formato';
+import { nomeDoMes, rotuloSemValor } from '@/lib/formato';
 import { cn } from '@/lib/utils';
 import { LancamentoCard } from './LancamentoCard';
 import { useMes } from './queries';
@@ -18,11 +18,13 @@ import { ResumoMes } from './ResumoMes';
 function Secao({
   titulo,
   total,
+  semValor = 0,
   itens,
   vazio,
 }: {
   titulo: string;
   total?: number;
+  semValor?: number;
   itens: LancamentoItem[];
   vazio?: string;
 }) {
@@ -30,7 +32,12 @@ function Secao({
     <section className="grid gap-3" aria-label={titulo}>
       <h2 className="flex items-baseline justify-between text-base font-semibold">
         <span>{titulo}</span>
-        {total !== undefined && <span className="text-sm font-normal">{formatBRL(total)}</span>}
+        {total !== undefined && (
+          <span className="flex items-baseline gap-2 text-sm font-normal">
+            {semValor > 0 && <span>{rotuloSemValor(semValor)}</span>}
+            <span>{formatBRL(total)}</span>
+          </span>
+        )}
       </h2>
       {itens.length === 0 && vazio && <p className="text-muted-foreground py-2">{vazio}</p>}
       {itens.map((item) => (
@@ -95,6 +102,7 @@ function MesConteudo({ competencia }: { competencia: string }) {
             <Secao
               titulo="Atrasadas"
               total={data.atrasadas.totalCentavos}
+              semValor={data.atrasadas.semValor}
               itens={data.atrasadas.itens}
             />
           )}

@@ -99,6 +99,19 @@ describe('GET /api/meses/:competencia', () => {
       '2026-09',
     ]);
     expect(res.atrasadas.totalCentavos).toBe(150000);
+    expect(res.atrasadas.semValor).toBe(0);
+  });
+
+  it('atrasadas conta as pendentes sem valor', async () => {
+    await criarConta(
+      { tipo: 'RECORRENTE_VARIAVEL', nome: 'Luz', prioridade: 'IMPORTANTE', diaVencimento: 10 },
+      '2026-09',
+    );
+    await criarConta(fixa, '2026-09');
+    const res = (await get('/api/meses/2026-10')).json();
+    expect(res.atrasadas.itens).toHaveLength(2);
+    expect(res.atrasadas.semValor).toBe(1);
+    expect(res.atrasadas.totalCentavos).toBe(150000);
   });
 
   it('ver mês passado também gera as atrasadas do mês atual', async () => {

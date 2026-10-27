@@ -139,6 +139,7 @@ export async function mesDe(competencia: Competencia): Promise<MesView> {
     atrasadas: {
       itens: atrasadas,
       totalCentavos: atrasadas.reduce((soma, i) => soma + (i.valorCentavos ?? 0), 0),
+      semValor: atrasadas.filter((i) => i.valorCentavos === null).length,
     },
     aPagar,
     pagas,

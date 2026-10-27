@@ -272,22 +272,31 @@ describe('POST /api/lancamentos/:id/cancelar', () => {
 });
 
 describe('PATCH /api/lancamentos/:id', () => {
-  it('edita campos; mudar o vencimento não muda a competência', async () => {
+  it('edita campos; mudar o vencimento dentro do mês mantém a competência', async () => {
     const id = await criarEsporadica();
     const res = await chamar('PATCH', `/api/lancamentos/${id}`, {
       nome: 'Dentista (retorno)',
       valorCentavos: 30000,
-      vencimento: '2026-11-02',
+      vencimento: '2026-10-28',
       observacao: 'levar exames',
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toMatchObject({
       nome: 'Dentista (retorno)',
       valorCentavos: 30000,
-      vencimento: '2026-11-02',
+      vencimento: '2026-10-28',
       competencia: '2026-10',
       observacao: 'levar exames',
     });
+  });
+
+  it('vencimento em outro mês → 400 VENCIMENTO_FORA_DA_COMPETENCIA e nada muda', async () => {
+    const id = await criarEsporadica();
+    const res = await chamar('PATCH', `/api/lancamentos/${id}`, { vencimento: '2026-11-02' });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().erro).toBe('VENCIMENTO_FORA_DA_COMPETENCIA');
+    const salvo = await prisma.lancamento.findUniqueOrThrow({ where: { id } });
+    expect(salvo.vencimento).toBe('2026-10-25');
   });
 
   it('campo desconhecido → 400', async () => {

@@ -30,6 +30,8 @@ const listaComTotalSchema = z.object({
   totalCentavos: z.number().int(),
 });
 
+const atrasadasSchema = listaComTotalSchema.extend({ semValor: z.number().int() });
+
 export const mesViewSchema = z.object({
   competencia: competenciaSchema,
   resumo: z.object({
@@ -38,7 +40,7 @@ export const mesViewSchema = z.object({
     totalMesCentavos: z.number().int(),
     semValor: z.number().int(),
   }),
-  atrasadas: listaComTotalSchema,
+  atrasadas: atrasadasSchema,
   aPagar: z.array(lancamentoItemSchema),
   pagas: z.array(lancamentoItemSchema),
   canceladas: z.array(lancamentoItemSchema),

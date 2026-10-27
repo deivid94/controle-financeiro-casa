@@ -80,8 +80,15 @@ export async function cancelar(id: string): Promise<LancamentoItem> {
   return montarItem(await obter(id));
 }
 
-/** Mudar o vencimento não muda a competência: ela é a identidade do lançamento na geração. */
+/** A competência é a identidade do lançamento na geração: o vencimento só pode mudar dentro dela. */
 export async function editar(id: string, dados: EditarLancamentoInput): Promise<LancamentoItem> {
-  await obter(id);
+  const atual = await obter(id);
+  if (dados.vencimento !== undefined && competenciaDe(dados.vencimento) !== atual.competencia) {
+    throw new AppError(
+      400,
+      'VENCIMENTO_FORA_DA_COMPETENCIA',
+      'O vencimento deve estar no mesmo mês da competência',
+    );
+  }
   return montarItem(await repository.atualizar(id, dados));
 }

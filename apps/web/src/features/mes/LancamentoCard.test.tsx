@@ -1,7 +1,7 @@
 import type { LancamentoItem } from '@casa/shared';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LancamentoCard } from './LancamentoCard';
 
 const mocks = vi.hoisted(() => ({
@@ -220,5 +220,39 @@ describe('LancamentoCard', () => {
     await user.click(screen.getByRole('button', { name: 'Editar valor' }));
 
     expect(await screen.findByRole('textbox')).toHaveValue('1.500,00');
+  });
+
+  describe('selo Vencida', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2026-10-06T12:00:00-03:00'));
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('pendente com vencimento antes de hoje mostra Vencida', () => {
+      render(<LancamentoCard item={item({ vencimento: '2026-10-05' })} />);
+      expect(screen.getByText('Vencida')).toBeInTheDocument();
+    });
+
+    it('pendente que vence depois de hoje não mostra', () => {
+      render(<LancamentoCard item={item({ vencimento: '2026-10-10' })} />);
+      expect(screen.queryByText('Vencida')).not.toBeInTheDocument();
+    });
+
+    it('pendente que vence hoje não mostra', () => {
+      render(<LancamentoCard item={item({ vencimento: '2026-10-06' })} />);
+      expect(screen.queryByText('Vencida')).not.toBeInTheDocument();
+    });
+
+    it('paga com vencimento passado não mostra', () => {
+      render(
+        <LancamentoCard
+          item={item({ vencimento: '2026-10-05', status: 'PAGA', pagoEm: '2026-10-04T15:00:00Z' })}
+        />,
+      );
+      expect(screen.queryByText('Vencida')).not.toBeInTheDocument();
+    });
   });
 });

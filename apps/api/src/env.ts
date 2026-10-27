@@ -14,7 +14,10 @@ const envSchema = z.object({
         .split(',')
         .map((h) => h.trim().toLowerCase())
         .filter(Boolean),
-    ),
+    )
+    .refine((headers) => headers.length > 0, {
+      message: 'Informe ao menos um header (ex.: x-vercel-forwarded-for)',
+    }),
   PORT: z.coerce.number().int().positive().default(3333),
 });
 

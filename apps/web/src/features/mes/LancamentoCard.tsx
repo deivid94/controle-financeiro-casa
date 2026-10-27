@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { hojeSaoPaulo } from '@/lib/formato';
 import { cn } from '@/lib/utils';
 import { CodigoDialog } from './CodigoDialog';
 import { useCancelar, useDesfazer, useEditarLancamento, usePagar } from './queries';
@@ -68,6 +69,8 @@ export function LancamentoCard({ item }: { item: LancamentoItem }) {
 
   const pendente = item.status === 'PENDENTE';
   const prioridade = PRIORIDADE[item.prioridade];
+  // AAAA-MM-DD ordena como texto: comparar strings evita Date e fuso.
+  const vencida = pendente && item.vencimento < hojeSaoPaulo();
 
   function pagarComValor(valorCentavos?: number) {
     if (pagar.isPending) return;
@@ -93,6 +96,7 @@ export function LancamentoCard({ item }: { item: LancamentoItem }) {
             <h3 className="truncate font-medium">{item.nome}</h3>
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <Badge variant={prioridade.variante}>{prioridade.rotulo}</Badge>
+              {vencida && <Badge variant="destructive">Vencida</Badge>}
               <span className="text-muted-foreground">Vence {diaMes(item.vencimento)}</span>
             </div>
           </div>

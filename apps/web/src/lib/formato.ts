@@ -21,3 +21,8 @@ const fusoSaoPaulo = new Intl.DateTimeFormat('en-CA', {
 export function hojeSaoPaulo(agora: Date = new Date()): string {
   return fusoSaoPaulo.format(agora);
 }
+
+/** `1 conta sem valor` / `N contas sem valor`. */
+export function rotuloSemValor(n: number): string {
+  return n === 1 ? '1 conta sem valor' : `${n} contas sem valor`;
+}

@@ -1,4 +1,5 @@
 import { formatBRL, type MesView } from '@casa/shared';
+import { rotuloSemValor } from '@/lib/formato';
 import { Card, CardContent } from '@/components/ui/card';
 
 export function ResumoMes({ resumo }: { resumo: MesView['resumo'] }) {
@@ -18,11 +19,7 @@ export function ResumoMes({ resumo }: { resumo: MesView['resumo'] }) {
         <p className="text-muted-foreground text-sm">
           Total do mês: {formatBRL(resumo.totalMesCentavos)}
         </p>
-        {resumo.semValor > 0 && (
-          <p className="text-sm">
-            {resumo.semValor === 1 ? '1 conta sem valor' : `${resumo.semValor} contas sem valor`}
-          </p>
-        )}
+        {resumo.semValor > 0 && <p className="text-sm">{rotuloSemValor(resumo.semValor)}</p>}
       </CardContent>
     </Card>
   );
