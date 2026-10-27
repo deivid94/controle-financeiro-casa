@@ -4,7 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { AppError } from '../src/plugins/error-handler.js';
 import { prisma } from '../src/lib/prisma.js';
-import { criarAppDeTeste, limparBanco } from './helpers.js';
+import { env } from '../src/env.js';
+import { criarAppDeTeste, limparBanco, nomeDoBanco } from './helpers.js';
 
 let app: FastifyInstance;
 
@@ -84,5 +85,19 @@ describe('infra da API', () => {
   it('o banco de teste está acessível e limpo', async () => {
     await limparBanco();
     expect(await prisma.conta.count()).toBe(0);
+  });
+});
+
+describe('limparBanco', () => {
+  it('só opera no banco casa_test', async () => {
+    expect(env.DATABASE_URL).toContain('/casa_test');
+    expect(nomeDoBanco('postgresql://casa:casa@localhost:5432/casa')).toBe('casa');
+    const original = env.DATABASE_URL;
+    env.DATABASE_URL = 'postgresql://casa:casa@localhost:5432/casa';
+    try {
+      await expect(limparBanco()).rejects.toThrow(/recusado/);
+    } finally {
+      env.DATABASE_URL = original;
+    }
   });
 });
