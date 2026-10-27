@@ -6,7 +6,7 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
@@ -64,10 +64,10 @@ jobs:
           DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
       # Build remoto na Vercel (Root Directory configurado em cada projeto)
       - name: Deploy da API
-        run: pnpm dlx vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN"
+        run: pnpm dlx vercel@65 deploy --prod --yes --token "$VERCEL_TOKEN"
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
       - name: Deploy do web
-        run: pnpm dlx vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN"
+        run: pnpm dlx vercel@65 deploy --prod --yes --token "$VERCEL_TOKEN"
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}

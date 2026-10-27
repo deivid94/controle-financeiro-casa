@@ -52,9 +52,10 @@ Nada abaixo foi feito pelo agente (sem contas/credenciais). Faça nesta ordem:
 4. **Git auto-deploy**: já está desligado pelos `vercel.json` (`git.deploymentEnabled: false`). Confirme em Settings > Git de cada projeto.
 5. **Env vars do projeto da API** (Production): `DATABASE_URL` (pooled), `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `BETTER_AUTH_URL` e `WEB_ORIGIN` (ambos = URL pública do web, ex. `https://<web>.vercel.app`), `IP_ADDRESS_HEADERS` (ver nota (c): valide antes; o padrão é `x-vercel-forwarded-for`). O web não precisa de env vars.
 6. **Secrets no GitHub** (Settings > Secrets and variables > Actions): `VERCEL_TOKEN` (conta Vercel > Tokens), `VERCEL_ORG_ID` (Settings do time/conta), `VERCEL_PROJECT_ID_API`, `VERCEL_PROJECT_ID_WEB` (Settings > General de cada projeto), `DIRECT_DATABASE_URL`.
-7. **Teste do CI sem deploy**: abra um PR com um teste quebrado de propósito. O job `test` deve falhar e o `deploy` nem rodar. Conserte, push, deve ficar verde. Merge na `main` dispara o deploy.
-8. **Seed dos usuários no Neon** (local, uma vez, depois do primeiro deploy e das migrações): no `apps/api/.env` coloque `DATABASE_URL` = URL direta do Neon e os `SEED_USER_*`; rode `pnpm --filter @casa/api seed:users`. Depois restaure o `.env` para o banco local.
-9. **Teste de fumaça em produção**: abra a URL do web em dois celulares, instale na tela inicial, logue com cada usuário e pague a mesma conta quase ao mesmo tempo nos dois. Deve ficar paga uma vez só (o segundo recebe a conta já paga, sem duplicar). Confira também que o login persiste (cookie) e que `/api/health` responde via web.
+7. **Migrações compatíveis**: o `migrate deploy` roda antes do deploy da API, então toda migração deve ser retrocompatível com o código anterior (adicione colunas/tabelas antes de remover ou renomear, em duas etapas).
+8. **Teste do CI sem deploy**: abra um PR com um teste quebrado de propósito. O job `test` deve falhar e o `deploy` nem rodar. Conserte, push, deve ficar verde. Merge na `main` dispara o deploy.
+9. **Seed dos usuários no Neon** (local, uma vez, depois do primeiro deploy e das migrações): no `apps/api/.env` coloque `DATABASE_URL` = URL direta do Neon e os `SEED_USER_*`; rode `pnpm --filter @casa/api seed:users`. Depois restaure o `.env` para o banco local.
+10. **Teste de fumaça em produção**: abra a URL do web em dois celulares, instale na tela inicial, logue com cada usuário e pague a mesma conta quase ao mesmo tempo nos dois. Deve ficar paga uma vez só (o segundo recebe a conta já paga, sem duplicar). Confira também que o login persiste (cookie) e que `/api/health` responde via web.
 
 ### Notas da verificação de documentação (Context7, 2026-10-27)
 
