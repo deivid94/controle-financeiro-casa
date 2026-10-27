@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
 import { hojeSaoPaulo } from '@/lib/formato';
+import { ROTULO_PRIORIDADE } from '@/features/contas/rotulos';
 import { useCriarEsporadica } from './queries';
 
 type Campos = {
@@ -100,9 +101,11 @@ export function EsporadicaForm() {
       </Campo>
       <Campo id="prioridade" rotulo="Prioridade">
         <NativeSelect id="prioridade" {...register('prioridade')}>
-          <option value="ESSENCIAL">Essencial</option>
-          <option value="IMPORTANTE">Importante</option>
-          <option value="NORMAL">Normal</option>
+          {Object.entries(ROTULO_PRIORIDADE).map(([valor, rotulo]) => (
+            <option key={valor} value={valor}>
+              {rotulo}
+            </option>
+          ))}
         </NativeSelect>
       </Campo>
       <Button type="submit" disabled={criar.isPending}>

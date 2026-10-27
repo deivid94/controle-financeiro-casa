@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes, useParams } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EsporadicaForm } from './EsporadicaForm';
 
@@ -9,10 +9,17 @@ vi.mock('./queries', () => ({
   useCriarEsporadica: () => ({ isPending: false, mutate: criar }),
 }));
 
+function MesStub() {
+  return <p>mes {useParams().competencia}</p>;
+}
+
 function montar() {
   render(
-    <MemoryRouter>
-      <EsporadicaForm />
+    <MemoryRouter initialEntries={['/lancar']}>
+      <Routes>
+        <Route path="/lancar" element={<EsporadicaForm />} />
+        <Route path="/mes/:competencia" element={<MesStub />} />
+      </Routes>
     </MemoryRouter>,
   );
   return userEvent.setup();
@@ -44,5 +51,20 @@ describe('EsporadicaForm', () => {
       prioridade: 'NORMAL',
       vencimento: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
     });
+  });
+
+  it('sucesso navega para o mês do vencimento', async () => {
+    const user = montar();
+    await user.type(screen.getByLabelText('Nome'), 'Conserto');
+    await user.type(screen.getByLabelText('Valor'), '10,00');
+    await user.clear(screen.getByLabelText('Vencimento'));
+    await user.type(screen.getByLabelText('Vencimento'), '2026-11-05');
+    await user.click(screen.getByRole('button', { name: 'Lançar' }));
+
+    await vi.waitFor(() => expect(criar).toHaveBeenCalledTimes(1));
+    const opcoes = criar.mock.calls[0]?.[1] as { onSuccess: () => void };
+    act(() => opcoes.onSuccess());
+
+    expect(await screen.findByText('mes 2026-11')).toBeInTheDocument();
   });
 });
