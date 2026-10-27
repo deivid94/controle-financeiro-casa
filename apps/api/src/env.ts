@@ -5,6 +5,16 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.url(),
   WEB_ORIGIN: z.url(),
+  // Headers (em ordem) de onde o Better Auth lê o IP do cliente para o rate limit. Só use headers que o cliente não controla.
+  IP_ADDRESS_HEADERS: z
+    .string()
+    .default('x-vercel-forwarded-for')
+    .transform((v) =>
+      v
+        .split(',')
+        .map((h) => h.trim().toLowerCase())
+        .filter(Boolean),
+    ),
   PORT: z.coerce.number().int().positive().default(3333),
 });
 

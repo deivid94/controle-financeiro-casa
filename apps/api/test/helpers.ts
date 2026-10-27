@@ -38,11 +38,8 @@ export async function loginComo(app: FastifyInstance, n: 1 | 2): Promise<string>
   const res = await app.inject({
     method: 'POST',
     url: '/api/auth/sign-in/email',
-    // IP distinto por chamada: o rate limit do Better Auth não deve interferir entre testes.
-    headers: {
-      origin: env.WEB_ORIGIN,
-      'x-forwarded-for': `10.0.0.${Math.floor(Math.random() * 250) + 1}`,
-    },
+    // IP fixo e confiável (o rate limit é zerado por limparBanco entre testes).
+    headers: { origin: env.WEB_ORIGIN, 'x-vercel-forwarded-for': '203.0.113.1' },
     payload: { email: usuario.email, password: usuario.senha },
   });
   if (res.statusCode !== 200) {

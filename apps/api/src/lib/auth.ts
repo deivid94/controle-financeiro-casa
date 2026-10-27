@@ -16,6 +16,7 @@ export function criarAuth(opts: { permitirCadastro: boolean }) {
     rateLimit: { enabled: true, storage: 'database' },
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
+    advanced: { ipAddress: { ipAddressHeaders: env.IP_ADDRESS_HEADERS } },
     trustedOrigins: [env.WEB_ORIGIN],
   });
 }

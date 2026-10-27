@@ -77,6 +77,25 @@ describe('autenticação', () => {
     expect(me.json().email).toBe(USUARIOS_TESTE[2].email);
   });
 
+  it('rate limit do login usa o IP confiável: variar x-forwarded-for não zera o balde', async () => {
+    const status: number[] = [];
+    for (let i = 0; i < 6; i++) {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/sign-in/email',
+        headers: {
+          origin: 'http://localhost:5173',
+          'x-vercel-forwarded-for': '198.51.100.7',
+          'x-forwarded-for': `10.9.9.${i}`,
+        },
+        payload: { email: USUARIOS_TESTE[1].email, password: 'senha-errada-123' },
+      });
+      status.push(res.statusCode);
+    }
+    expect(status.slice(0, 3)).toEqual([401, 401, 401]);
+    expect(status.slice(3)).toEqual([429, 429, 429]);
+  });
+
   it('seed é idempotente: rodar duas vezes mantém 2 usuários', async () => {
     await garantirUsuario(USUARIOS_TESTE[1]);
     await garantirUsuario(USUARIOS_TESTE[2]);
