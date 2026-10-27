@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { prioridadeSchema, valorCentavosSchema } from './conta.js';
+import { nomeSchema, prioridadeSchema, valorCentavosSchema } from './conta.js';
 
 /** Data `AAAA-MM-DD` que exista no calendário. */
 export const dataSchema = z
@@ -9,8 +9,6 @@ export const dataSchema = z
     const d = new Date(`${s}T00:00:00Z`);
     return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
   }, 'Data inválida');
-
-const nomeSchema = z.string().trim().min(1).max(80);
 
 export const criarEsporadicaSchema = z.object({
   nome: nomeSchema,

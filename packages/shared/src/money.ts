@@ -1,3 +1,5 @@
+import { VALOR_MAX_CENTAVOS } from './schemas/conta.js';
+
 /**
  * Converte texto em reais (pt-BR) para centavos. Retorna `null` se inválido ou ≤ 0.
  * Vírgula é sempre decimal; ponto + exatamente 3 dígitos é milhar; ponto é decimal
@@ -21,7 +23,9 @@ export function parseValorBRL(texto: string): number | null {
   }
 
   const centavos = Number(inteiro) * 100 + Number(decimal.padEnd(2, '0'));
-  return Number.isSafeInteger(centavos) && centavos > 0 ? centavos : null;
+  return Number.isSafeInteger(centavos) && centavos > 0 && centavos <= VALOR_MAX_CENTAVOS
+    ? centavos
+    : null;
 }
 
 const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });

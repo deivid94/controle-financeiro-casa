@@ -16,6 +16,11 @@ describe('parseValorBRL', () => {
     'rejeita %s',
     (t) => expect(parseValorBRL(t)).toBeNull(),
   );
+
+  it('respeita o limite do Int do Postgres (2.147.483.647 centavos)', () => {
+    expect(parseValorBRL('21.474.836,47')).toBe(2_147_483_647);
+    expect(parseValorBRL('21.474.836,48')).toBeNull();
+  });
 });
 
 describe('formatBRL', () => {

@@ -6,7 +6,7 @@ import {
   editarLancamentoSchema,
   pagarSchema,
 } from './lancamento.js';
-import { editarContaSchema } from './conta.js';
+import { editarContaSchema, nomeSchema } from './conta.js';
 
 const base = { nome: 'IPTU', prioridade: 'IMPORTANTE', diaVencimento: 10 } as const;
 
@@ -109,5 +109,28 @@ describe('lançamentos', () => {
       editarLancamentoSchema.safeParse({ codigoPagamento: null, observacao: null }).success,
     ).toBe(true);
     expect(editarLancamentoSchema.safeParse({ vencimento: 'x' }).success).toBe(false);
+  });
+});
+
+describe('limites e segurança', () => {
+  it('valorCentavos não passa do Int do Postgres', () => {
+    const f = { tipo: 'RECORRENTE_FIXA', ...base };
+    expect(criarContaSchema.safeParse({ ...f, valorCentavos: 2_147_483_647 }).success).toBe(true);
+    expect(criarContaSchema.safeParse({ ...f, valorCentavos: 2_147_483_648 }).success).toBe(false);
+  });
+
+  it('linkSegundaVia aceita só http/https', () => {
+    const v = { tipo: 'RECORRENTE_VARIAVEL', ...base };
+    for (const link of ['javascript:alert(1)', 'ftp://exemplo.com/x', 'data:text/html,x']) {
+      expect(criarContaSchema.safeParse({ ...v, linkSegundaVia: link }).success).toBe(false);
+      expect(editarContaSchema.safeParse({ linkSegundaVia: link }).success).toBe(false);
+    }
+    expect(criarContaSchema.safeParse({ ...v, linkSegundaVia: 'http://a.com' }).success).toBe(true);
+    expect(editarContaSchema.safeParse({ linkSegundaVia: null }).success).toBe(true);
+  });
+
+  it('nomeSchema é único e exportado', () => {
+    expect(nomeSchema.parse('  Luz ')).toBe('Luz');
+    expect(nomeSchema.safeParse('x'.repeat(81)).success).toBe(false);
   });
 });
