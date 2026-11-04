@@ -17,19 +17,34 @@ export async function garantirUsuario({ email, nome, senha }: DadosUsuario): Pro
   await authSeed.api.signUpEmail({ body: { email, name: nome, password: senha } });
 }
 
-function lerVariavel(nome: string): string {
-  const valor = process.env[nome];
+type Ambiente = Record<string, string | undefined>;
+
+function lerVariavel(env: Ambiente, nome: string): string {
+  const valor = env[nome];
   if (!valor) throw new Error(`Variável ${nome} não definida`);
   return valor;
 }
 
+/**
+ * Lê SEED_USER_1_*, SEED_USER_2_*, ... em sequência e para no primeiro número sem e-mail.
+ * Para dar acesso a mais alguém da casa, basta acrescentar o próximo número no .env.
+ */
+export function lerUsuarios(env: Ambiente): DadosUsuario[] {
+  const usuarios: DadosUsuario[] = [];
+  for (let n = 1; env[`SEED_USER_${n}_EMAIL`]; n++) {
+    usuarios.push({
+      email: lerVariavel(env, `SEED_USER_${n}_EMAIL`),
+      nome: lerVariavel(env, `SEED_USER_${n}_NOME`),
+      senha: lerVariavel(env, `SEED_USER_${n}_SENHA`),
+    });
+  }
+  // Zero usuários quase sempre é .env errado; melhor avisar do que terminar calado.
+  if (usuarios.length === 0) throw new Error('Variável SEED_USER_1_EMAIL não definida');
+  return usuarios;
+}
+
 async function main(): Promise<void> {
-  for (const n of [1, 2]) {
-    const usuario = {
-      email: lerVariavel(`SEED_USER_${n}_EMAIL`),
-      nome: lerVariavel(`SEED_USER_${n}_NOME`),
-      senha: lerVariavel(`SEED_USER_${n}_SENHA`),
-    };
+  for (const usuario of lerUsuarios(process.env)) {
     await garantirUsuario(usuario);
     console.log(`Usuário garantido: ${usuario.email}`);
   }
