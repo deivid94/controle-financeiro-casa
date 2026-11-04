@@ -1,7 +1,5 @@
 import { formatBRL, type ContaView } from '@casa/shared';
-import { Plus } from 'lucide-react';
 import { Link } from 'react-router';
-import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -34,11 +32,10 @@ export function ContasPage() {
 
   return (
     <div className="grid gap-4">
-      <header className="flex items-center justify-between">
+      {/* Esta aba só lista e edita as contas que se repetem; criar fica no "Nova" da barra (issue #4). */}
+      <header className="grid gap-1">
         <h1 className="text-xl font-semibold">Contas</h1>
-        <Link to="/contas/nova" className={buttonVariants()}>
-          <Plus aria-hidden /> Nova conta
-        </Link>
+        <p className="text-muted-foreground text-sm">Contas que se repetem todo mês.</p>
       </header>
 
       {isPending && <p className="text-muted-foreground">Carregando…</p>}
@@ -50,7 +47,9 @@ export function ContasPage() {
         </p>
       )}
       {data && data.length === 0 && (
-        <p className="text-muted-foreground">Nenhuma conta cadastrada ainda.</p>
+        <p className="text-muted-foreground">
+          Nenhuma conta cadastrada ainda. Toque em Nova, na barra abaixo, para cadastrar.
+        </p>
       )}
 
       {ativas.length > 0 && (

@@ -7,7 +7,8 @@ export function BottomNav() {
   const { pathname } = useLocation();
   const destinos = [
     { to: `/mes/${competenciaAtual()}`, rotulo: 'Mês', Icone: CalendarDays, prefixo: '/mes/' },
-    { to: '/lancar', rotulo: 'Lançar', Icone: PlusCircle, prefixo: '/lancar' },
+    // Único ponto de criação (issue #4): a escolha "só este mês / todo mês" fica na tela /nova.
+    { to: '/nova', rotulo: 'Nova', Icone: PlusCircle, prefixo: '/nova' },
     { to: '/historico', rotulo: 'Histórico', Icone: History, prefixo: '/historico' },
     { to: '/contas', rotulo: 'Contas', Icone: ReceiptText, prefixo: '/contas' },
   ];
