@@ -77,7 +77,7 @@ export function EsporadicaForm() {
 
   return (
     <form onSubmit={(e) => void enviar(e)} className="grid gap-4" noValidate>
-      <h1 className="text-xl font-semibold">Lançar conta avulsa</h1>
+      <h1 className="text-xl font-semibold">Conta só deste mês</h1>
       <Campo id="nome" rotulo="Nome" erro={errors.nome?.message}>
         <Input id="nome" autoComplete="off" aria-invalid={!!errors.nome} {...register('nome')} />
       </Campo>

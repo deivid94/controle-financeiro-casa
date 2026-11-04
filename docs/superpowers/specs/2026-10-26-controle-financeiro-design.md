@@ -105,6 +105,7 @@ Ações:
 - **Desfazer**: um lançamento pago pode voltar para pendente (para corrigir toques errados).
 - **Cancelar** ("não veio / remover"): leva o lançamento para `cancelada`. Pede confirmação, porque tira o lançamento dos totais.
 - **Lançar esporádica**: formulário curto (nome, valor, vencimento, prioridade).
+- **Criação unificada** (issue #4): um único botão **Nova** na barra pergunta "Com que frequência?": *Só este mês* (esporádica), *Todo mês* (conta recorrente) ou *Parcelada*. A aba **Contas** só lista e edita as recorrentes.
 - Navegar para o **mês anterior** e para o **próximo**.
 
 ### 6.4 Histórico

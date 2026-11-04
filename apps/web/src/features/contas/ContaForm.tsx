@@ -102,10 +102,10 @@ function criarFormSchema(edicao: boolean) {
     });
 }
 
-function valorInicial(conta?: ContaView): Campos {
+function valorInicial(conta?: ContaView, tipoInicial?: Campos['tipo']): Campos {
   if (!conta) {
     return {
-      tipo: 'RECORRENTE_VARIAVEL',
+      tipo: tipoInicial ?? 'RECORRENTE_VARIAVEL',
       nome: '',
       prioridade: 'NORMAL',
       diaVencimento: '',
@@ -128,7 +128,14 @@ function valorInicial(conta?: ContaView): Campos {
   };
 }
 
-export function ContaForm({ conta }: { conta?: ContaView }) {
+export function ContaForm({
+  conta,
+  tipoInicial,
+}: {
+  conta?: ContaView;
+  /** Só na criação: tipo já escolhido na tela "Com que frequência?". */
+  tipoInicial?: Campos['tipo'];
+}) {
   const edicao = conta !== undefined;
   const navigate = useNavigate();
   const criar = useCriarConta();
@@ -140,7 +147,7 @@ export function ContaForm({ conta }: { conta?: ContaView }) {
     formState: { errors },
   } = useForm<Campos>({
     resolver: zodResolver(criarFormSchema(edicao)),
-    defaultValues: valorInicial(conta),
+    defaultValues: valorInicial(conta, tipoInicial),
   });
   const tipo = useWatch({ control, name: 'tipo' });
   const pendente = criar.isPending || editar.isPending;
