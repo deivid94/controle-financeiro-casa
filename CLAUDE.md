@@ -31,6 +31,22 @@ Monorepo pnpm: `apps/api` (Fastify + Prisma + Better Auth), `apps/web` (React + 
 - Nomes de domínio em português sem acento (`Conta`, `Lancamento`, `competencia`); infraestrutura em inglês (`buildApp`, `requireAuth`).
 - Bibliotecas: última versão estável; se a doc atual divergir do plano, siga a doc e anote no commit.
 - Testes: TDD (teste falhando primeiro), Vitest.
+- Front-end: toda mudança visual ou de interação no `apps/web` também é testada no navegador com o **MCP do Playwright**, além do Vitest (o jsdom não desenha CSS nem layout). Ver "Teste no navegador (Playwright)".
+
+## Teste no navegador (Playwright)
+
+Use o MCP do Playwright (`mcp__playwright__*`) para validar o front-end no app real antes de abrir o PR:
+
+1. `docker compose up -d` e `pnpm dev` (web em `http://localhost:5173`).
+2. Viewport de celular: `browser_resize` 390x844 (o app é mobile first).
+3. Login com `SEED_USER_1_EMAIL`/`SEED_USER_1_SENHA` do `apps/api/.env` (rode `pnpm --filter @casa/api seed:users` se o banco estiver vazio). Não copie a senha para commits, issues ou PRs.
+4. Navegue até a tela afetada, interaja (`browser_fill_form`, `browser_click`, `browser_select_option`) e confira com `browser_snapshot` e `browser_take_screenshot`.
+5. Para bugs de cor/contraste, use `browser_evaluate` com `getComputedStyle` e teste também com `browser_emulate_media` `colorScheme: 'dark'` (o celular pode estar em modo escuro).
+6. Registre no PR o que foi verificado no navegador.
+
+Limite: listas nativas abertas (`<select>`, calendário do `<input type="date">`) são desenhadas pelo sistema e não aparecem no screenshot. Nesses casos, confira as cores calculadas e, se possível, no celular de verdade.
+
+Arquivos gerados (snapshots, screenshots, logs) ficam em `.playwright-mcp/`, que está no `.gitignore`.
 
 ## Sobre quem trabalha aqui
 

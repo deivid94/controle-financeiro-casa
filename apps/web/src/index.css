@@ -126,5 +126,9 @@
   }
   html {
     @apply font-sans;
+    /* O app só tem tema claro. Avisar o navegador faz os controles nativos
+       (lista do <select>, calendário do <input type="date">) seguirem o tema claro
+       mesmo com o sistema em modo escuro. */
+    color-scheme: light;
   }
 }
