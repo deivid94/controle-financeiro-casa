@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from 'react-router';
+import { AppHeader } from '@/components/AppHeader';
 import { BottomNav } from '@/components/BottomNav';
 import { authClient } from '@/lib/auth-client';
 
@@ -15,6 +16,7 @@ export function AppLayout() {
 
   return (
     <div className="min-h-dvh pb-20">
+      <AppHeader />
       <main className="p-4">
         <Outlet />
       </main>
