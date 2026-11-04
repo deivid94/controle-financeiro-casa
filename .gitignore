@@ -8,3 +8,6 @@ coverage/
 !apps/api/.env.test
 apps/api/src/generated/
 *.tsbuildinfo
+
+# Saída do MCP do Playwright (snapshots, screenshots, logs)
+.playwright-mcp/
