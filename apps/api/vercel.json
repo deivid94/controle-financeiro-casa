@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": { "deploymentEnabled": false },
-  "buildCommand": "pnpm --filter @casa/shared build && pnpm --filter @casa/api exec prisma generate"
+  "framework": null,
+  "buildCommand": "pnpm --filter @casa/shared build && pnpm --filter @casa/api build",
+  "outputDirectory": "public",
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
 }
