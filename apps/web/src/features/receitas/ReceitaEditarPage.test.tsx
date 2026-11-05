@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ReceitaEditarPage } from './ReceitaEditarPage';
 
 const mutate = vi.fn();
-const receita = {
+let receita = {
   id: 'r1',
   nome: 'Salário',
   valorCentavos: 150000,
@@ -32,7 +32,10 @@ function montar(caminho = '/receitas/r1') {
 }
 
 describe('ReceitaEditarPage', () => {
-  beforeEach(() => mutate.mockReset());
+  beforeEach(() => {
+    mutate.mockReset();
+    receita = { ...receita, ativa: true };
+  });
 
   it('mostra o formulário preenchido e o aviso do valor', () => {
     montar();
@@ -60,6 +63,13 @@ describe('ReceitaEditarPage', () => {
     const user = montar();
     await user.click(screen.getByRole('button', { name: 'Desativar' }));
     expect(mutate.mock.calls[0]![0]).toEqual({ id: 'r1', dados: { ativa: false } });
+  });
+
+  it('Reativar envia ativa: true', async () => {
+    receita = { ...receita, ativa: false };
+    const user = montar();
+    await user.click(screen.getByRole('button', { name: 'Reativar' }));
+    expect(mutate.mock.calls[0]![0]).toEqual({ id: 'r1', dados: { ativa: true } });
   });
 
   it('id inexistente mostra aviso', () => {

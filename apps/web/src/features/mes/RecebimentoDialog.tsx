@@ -26,7 +26,7 @@ function centavosParaTexto(centavos: number): string {
 
 // `parseValorBRL` recusa zero (vale para contas e avulsas), mas "não recebi nada neste mês"
 // é um valor legítimo de ocorrência fixa: reconhecemos o zero aqui.
-const ZERO = /^s*(R$s*)?0+([.,]0{1,2})?s*$/i;
+const ZERO = /^\s*(R\$\s*)?0+([.,]0{1,2})?\s*$/i;
 
 function parseValorMes(texto: string): number | null {
   return ZERO.test(texto) ? 0 : parseValorBRL(texto);
@@ -64,8 +64,8 @@ function RecebimentoForm({ item, onFechar }: { item: RecebimentoItem; onFechar: 
         setErros({ valor: 'Valor inválido' });
         return;
       }
-      editar.mutate({ id: item.id, dados: { valorCentavos: centavos } });
-      onFechar();
+      // Fecha só no sucesso: no erro o diálogo fica aberto e o toast do hook aparece.
+      editar.mutate({ id: item.id, dados: { valorCentavos: centavos } }, { onSuccess: onFechar });
       return;
     }
     // Avulsa: mesmas regras da criação (nome preenchido, valor > 0, data válida).
@@ -81,8 +81,7 @@ function RecebimentoForm({ item, onFechar }: { item: RecebimentoItem; onFechar: 
     }
     setErros(novos);
     if (Object.keys(novos).length > 0) return;
-    editar.mutate({ id: item.id, dados });
-    onFechar();
+    editar.mutate({ id: item.id, dados }, { onSuccess: onFechar });
   }
 
   if (confirmando) {
@@ -100,10 +99,7 @@ function RecebimentoForm({ item, onFechar }: { item: RecebimentoItem; onFechar: 
             type="button"
             variant="destructive"
             disabled={pendente}
-            onClick={() => {
-              excluir.mutate(item.id);
-              onFechar();
-            }}
+            onClick={() => excluir.mutate(item.id, { onSuccess: onFechar })}
           >
             Confirmar exclusão
           </Button>
