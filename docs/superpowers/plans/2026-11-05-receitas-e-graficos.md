@@ -316,4 +316,15 @@
 - [ ] **Step 3:** Marque uma conta como paga → o saldo cai e aparece a fatia nos gastos pagos. Toque em "N contas" → a página rola até "A pagar" (confira `window.scrollY` com `browser_evaluate`).
 - [ ] **Step 4:** Ajuste o aluguel deste mês para "0,00" pela legenda → "não recebido" aparece e o saldo cai R$ 1.500,00. Edite o cadastro para R$ 1.600,00 → este mês continua R$ 0,00 e o próximo mês (seta ›) mostra R$ 1.600,00.
 - [ ] **Step 5:** `browser_emulate_media` `colorScheme: 'dark'` → screenshot; confira com `getComputedStyle` que as 6 cores das fatias são distintas e que os textos da legenda têm contraste.
+- [ ] **Step 5b — riscos visuais apontados na revisão final (jsdom não pega):**
+  - Depois de tocar em "N contas", o heading "A pagar" fica inteiro abaixo do header sticky (`scroll-mt` calculado em `MesPage.tsx`)? Se possível, confira também no PWA instalado com notch.
+  - A rosca vazia ("Nada pago ainda") tem a mesma espessura da rosca real, e o círculo `bg-muted` aparece no modo escuro?
+  - As linhas entre as fatias aparecem bem nos dois temas?
+  - Com 6 contas pagas, a 6ª fatia sai cinza, igual a "Outros". Isso é aceitável?
+  - Em 390px, o `size-28` ao lado de "Ainda a pagar" cabe com valores grandes ("R$ 12.345,67 + 2 sem valor")? E nomes longos nas legendas?
+  - O saldo negativo (`text-destructive`) tem contraste nos dois temas?
+  - O dialog "Valor deste mês" fica usável com o teclado do celular aberto?
+  - Tab não para no SVG do gráfico (`accessibilityLayer={false}`)?
+  - Espaçamento entre os grupos "Conta" e "Receita" em `/nova`. Receitas inativas esmaecidas na aba Contas.
+  - Nota: tela nova, ou opção errada, deve gerar um commit de correção antes do PR.
 - [ ] **Step 6:** Push da branch `feat/receitas-e-graficos` e abra o PR para `main`, com o resumo do que foi verificado no navegador (sem dados de login) e terminando com `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
