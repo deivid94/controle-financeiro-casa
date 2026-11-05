@@ -40,6 +40,18 @@ describe('agruparFatias', () => {
     });
   });
 
+  it('com exatamente 7 itens dá 6 fatias: os 5 maiores e Outros com a soma dos 2 menores', () => {
+    const fatias = agruparFatias([1, 2, 3, 4, 5, 6, 7].map((n) => item(`i${n}`, n * 100)));
+    expect(fatias).toHaveLength(6);
+    expect(fatias.slice(0, 5).map((f) => f.valorCentavos)).toEqual([700, 600, 500, 400, 300]);
+    expect(fatias[5]).toEqual({
+      chave: 'outros',
+      nome: 'Outros',
+      valorCentavos: 200 + 100,
+      cor: 'var(--chart-6)',
+    });
+  });
+
   it('ignora valor nulo', () => {
     const fatias = agruparFatias([item('a', null), item('b', 50)]);
     expect(fatias).toHaveLength(1);
