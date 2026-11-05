@@ -13,15 +13,20 @@ import { nomeDoMes, rotuloSemValor } from '@/lib/formato';
 import { cn } from '@/lib/utils';
 import { LancamentoCard } from './LancamentoCard';
 import { useMes } from './queries';
+import { GraficoGastos } from './GraficoGastos';
+import { GraficoReceitas } from './GraficoReceitas';
 import { ResumoMes } from './ResumoMes';
+import { SaldoMes } from './SaldoMes';
 
 function Secao({
+  id,
   titulo,
   total,
   semValor = 0,
   itens,
   vazio,
 }: {
+  id?: string;
   titulo: string;
   total?: number;
   semValor?: number;
@@ -29,7 +34,7 @@ function Secao({
   vazio?: string;
 }) {
   return (
-    <section className="grid gap-3" aria-label={titulo}>
+    <section id={id} className="grid scroll-mt-4 gap-3" aria-label={titulo}>
       <h2 className="flex items-baseline justify-between text-base font-semibold">
         <span>{titulo}</span>
         {total !== undefined && (
@@ -97,6 +102,10 @@ function MesConteudo({ competencia }: { competencia: string }) {
 
       {data && (
         <>
+          <SaldoMes saldo={data.saldo} />
+          {/* Task 9 liga onSelecionar ao diálogo de edição do recebimento. */}
+          <GraficoReceitas receitas={data.receitas} onSelecionar={() => {}} />
+          <GraficoGastos pagas={data.pagas} aPagar={data.aPagar} resumo={data.resumo} />
           <ResumoMes resumo={data.resumo} />
           {data.atrasadas.itens.length > 0 && (
             <Secao
@@ -106,7 +115,7 @@ function MesConteudo({ competencia }: { competencia: string }) {
               itens={data.atrasadas.itens}
             />
           )}
-          <Secao titulo="A pagar" itens={data.aPagar} vazio="Tudo pago neste mês 🎉" />
+          <Secao id="a-pagar" titulo="A pagar" itens={data.aPagar} vazio="Tudo pago neste mês 🎉" />
           {data.pagas.length > 0 && <Secao titulo="Pagas" itens={data.pagas} />}
           {data.canceladas.length > 0 && (
             <details className="grid gap-3">

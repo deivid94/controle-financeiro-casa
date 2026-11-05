@@ -59,6 +59,8 @@ describe('MesPage', () => {
       aPagar: [],
       pagas: [],
       canceladas: [],
+      receitas: { itens: [], totalCentavos: 0 },
+      saldo: { receitasCentavos: 0, pagoCentavos: 0, saldoCentavos: 0, depoisDeTudoCentavos: 0 },
     });
 
     function renderizar(semValor: number) {
@@ -83,6 +85,49 @@ describe('MesPage', () => {
 
     it('não mostra quando todas têm valor', () => {
       expect(renderizar(0).queryByText(/sem valor/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Saldo e gráficos', () => {
+    it('mostra Saldo do mês antes de Receitas e dá id à seção A pagar', () => {
+      useMes.mockReturnValue({
+        data: {
+          competencia: '2026-10',
+          resumo: {
+            totalPagoCentavos: 0,
+            totalPendenteCentavos: 0,
+            totalMesCentavos: 0,
+            semValor: 0,
+          },
+          atrasadas: { itens: [], totalCentavos: 0, semValor: 0 },
+          aPagar: [],
+          pagas: [],
+          canceladas: [],
+          receitas: { itens: [], totalCentavos: 0 },
+          saldo: {
+            receitasCentavos: 0,
+            pagoCentavos: 0,
+            saldoCentavos: 0,
+            depoisDeTudoCentavos: 0,
+          },
+        } satisfies MesView,
+        isPending: false,
+        error: null,
+      });
+      render(
+        <MemoryRouter initialEntries={['/mes/2026-10']}>
+          <Routes>
+            <Route path="/mes/:competencia" element={<MesPage />} />
+          </Routes>
+        </MemoryRouter>,
+      );
+
+      const saldo = screen.getByText('Saldo do mês');
+      const receitas = screen.getByText(/^Receitas ·/);
+      expect(
+        saldo.compareDocumentPosition(receitas) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(screen.getByRole('region', { name: 'A pagar' })).toHaveAttribute('id', 'a-pagar');
     });
   });
 });
