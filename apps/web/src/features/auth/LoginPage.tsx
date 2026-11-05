@@ -7,6 +7,9 @@ import { authClient } from '@/lib/auth-client';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  // O useSession guarda a sessão em memória. Sem recarregá-la após o login, o AppLayout
+  // ainda veria "sem sessão" e devolveria para /login (aconteceu em produção).
+  const { refetch: recarregarSessao } = authClient.useSession();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState<string | null>(null);
@@ -22,6 +25,7 @@ export function LoginPage() {
         setErro('E-mail ou senha inválidos');
         return;
       }
+      await recarregarSessao();
       await navigate('/', { replace: true });
     } catch {
       setErro('Não foi possível entrar. Tente novamente.');
