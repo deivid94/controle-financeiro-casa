@@ -138,3 +138,32 @@ model RateLimit {
   @@unique([key])
   @@map("rateLimit")
 }
+
+// Cadastro de receita fixa (ex.: aluguel da inquilina)
+model Receita {
+  id                String        @id @default(cuid())
+  nome              String
+  diaRecebimento    Int // 1-31; meses curtos usam o último dia
+  valorCentavos     Int
+  inicioCompetencia String // AAAA-MM do cadastro (fuso SP)
+  ativa             Boolean       @default(true)
+  recebimentos      Recebimento[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+// Ocorrência no mês (fixa gerada ou só deste mês)
+model Recebimento {
+  id            String   @id @default(cuid())
+  receitaId     String? // null = receita só deste mês
+  receita       Receita? @relation(fields: [receitaId], references: [id])
+  nome          String
+  competencia   String // AAAA-MM
+  data          String // AAAA-MM-DD
+  valorCentavos Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([receitaId, competencia])
+  @@index([competencia])
+}
