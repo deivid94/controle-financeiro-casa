@@ -1,7 +1,7 @@
 import { formatBRL, type LancamentoItem, type MesView } from '@casa/shared';
 import type { MouseEvent } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { agruparFatias } from './fatias';
+import { agruparFatias, itensDaLegenda } from './fatias';
 import { Legenda, Rosca } from './Rosca';
 
 function irParaAPagar(e: MouseEvent) {
@@ -18,9 +18,10 @@ export function GraficoGastos({
   aPagar: LancamentoItem[];
   resumo: MesView['resumo'];
 }) {
-  const fatias = agruparFatias(
-    pagas.map((p) => ({ id: p.id, nome: p.nome, valorCentavos: p.valorCentavos })),
-  );
+  const itensPagos = pagas.map((p) => ({ id: p.id, nome: p.nome, valorCentavos: p.valorCentavos }));
+  const fatias = agruparFatias(itensPagos);
+  // A rosca agrupa em "Outros", mas a legenda e o aria-label listam todas as contas.
+  const legenda = itensDaLegenda(itensPagos, fatias);
   // Só a competência exibida: `aPagar` já vem sem as atrasadas de meses anteriores.
   const pendentes = aPagar.filter((i) => i.status === 'PENDENTE');
   const totalPendente = pendentes.reduce((soma, i) => soma + (i.valorCentavos ?? 0), 0);
@@ -28,9 +29,9 @@ export function GraficoGastos({
   const n = pendentes.length;
 
   const rotulo =
-    fatias.length === 0
+    legenda.length === 0
       ? 'Gastos pagos: nada pago ainda'
-      : `Gastos pagos: ${fatias.map((f) => `${f.nome} ${formatBRL(f.valorCentavos)}`).join(', ')}`;
+      : `Gastos pagos: ${legenda.map((f) => `${f.nome} ${formatBRL(f.valorCentavos)}`).join(', ')}`;
 
   return (
     <Card>
@@ -59,10 +60,10 @@ export function GraficoGastos({
             )}
           </div>
         </div>
-        {fatias.length === 0 ? (
+        {legenda.length === 0 ? (
           <p className="text-muted-foreground text-sm">Nada pago ainda</p>
         ) : (
-          <Legenda fatias={fatias} />
+          <Legenda fatias={legenda} />
         )}
       </CardContent>
     </Card>

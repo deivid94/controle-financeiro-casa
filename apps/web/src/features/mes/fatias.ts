@@ -34,3 +34,20 @@ export function agruparFatias(itens: Item[]): Fatia[] {
   }
   return fatias;
 }
+
+// Itens da legenda: todos os itens com valor (mesma ordem das fatias), inclusive os
+// que foram agrupados em "Outros", que ficam com a cor da fatia "Outros" (--chart-6).
+export function itensDaLegenda(itens: Item[], fatias: Fatia[]): Fatia[] {
+  const cores = new Map(fatias.map((f) => [f.chave, f.cor]));
+  return itens
+    .filter(
+      (i): i is Item & { valorCentavos: number } => i.valorCentavos !== null && i.valorCentavos > 0,
+    )
+    .sort((a, b) => b.valorCentavos - a.valorCentavos || a.nome.localeCompare(b.nome, 'pt-BR'))
+    .map((i) => ({
+      chave: i.id,
+      nome: i.nome,
+      valorCentavos: i.valorCentavos,
+      cor: cores.get(i.id) ?? cor(MAX_FATIAS - 1),
+    }));
+}

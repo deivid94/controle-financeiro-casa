@@ -37,7 +37,11 @@ const resumo = (totalPagoCentavos: number): MesView['resumo'] => ({
 });
 
 describe('GraficoGastos', () => {
-  afterEach(() => vi.restoreAllMocks());
+  const scrollOriginal = Element.prototype.scrollIntoView;
+  afterEach(() => {
+    vi.restoreAllMocks();
+    Element.prototype.scrollIntoView = scrollOriginal;
+  });
 
   it('mostra as pagas, o total e a caixa Ainda a pagar', () => {
     const pagas = [lanc('p1', 'Internet', 9900, 'PAGA')];
@@ -81,5 +85,18 @@ describe('GraficoGastos', () => {
     expect(screen.getByText('Nada pago ainda')).toBeInTheDocument();
     expect(screen.getByText('Tudo pago 🎉')).toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('com mais de 6 pagas a legenda e o rótulo listam todas', () => {
+    const pagas = Array.from({ length: 8 }, (_, i) =>
+      lanc(`p${i}`, `Conta ${i + 1}`, (8 - i) * 1000, 'PAGA'),
+    );
+    render(<GraficoGastos pagas={pagas} aPagar={[]} resumo={resumo(36000)} />);
+
+    for (let i = 1; i <= 8; i++) {
+      expect(screen.getByText(`Conta ${i}`)).toBeInTheDocument();
+      expect(screen.getByRole('img').getAttribute('aria-label')).toContain(`Conta ${i} `);
+    }
+    expect(screen.queryByText('Outros')).not.toBeInTheDocument();
   });
 });
