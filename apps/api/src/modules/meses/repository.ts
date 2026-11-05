@@ -1,5 +1,6 @@
 import type { Competencia } from '@casa/shared';
 import type { NovoLancamento } from '../../domain/geracao.js';
+import type { NovoRecebimento } from '../../domain/recebimentos.js';
 import { prisma } from '../../lib/prisma.js';
 
 /** Única camada que fala com o Prisma. */
@@ -67,5 +68,28 @@ export function listarNaoCanceladasAte(competencia: Competencia) {
   return prisma.lancamento.findMany({
     where: { status: { not: 'CANCELADA' }, competencia: { lte: competencia } },
     select: { competencia: true, status: true, valorCentavos: true },
+  });
+}
+
+export function listarReceitas() {
+  return prisma.receita.findMany();
+}
+
+export function listarChavesRecebimentos(ate: Competencia) {
+  return prisma.recebimento.findMany({
+    where: { receitaId: { not: null }, competencia: { lte: ate } },
+    select: { receitaId: true, competencia: true },
+  });
+}
+
+export function criarRecebimentos(novos: NovoRecebimento[]) {
+  // skipDuplicates: a unicidade (receitaId, competencia) resolve a corrida entre dois usuários.
+  return prisma.recebimento.createMany({ data: novos, skipDuplicates: true });
+}
+
+export function listarRecebimentosDaCompetencia(competencia: Competencia) {
+  return prisma.recebimento.findMany({
+    where: { competencia },
+    orderBy: [{ valorCentavos: 'desc' }, { nome: 'asc' }],
   });
 }

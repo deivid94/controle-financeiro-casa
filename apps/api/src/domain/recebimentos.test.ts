@@ -16,8 +16,20 @@ describe('planejarRecebimentos', () => {
   it('gera um recebimento por mês até a competência alvo', () => {
     const novos = planejarRecebimentos([salario], new Set(), '2026-11');
     expect(novos).toEqual([
-      { receitaId: 'r1', nome: 'Salário', competencia: '2026-10', data: '2026-10-05', valorCentavos: 450000 },
-      { receitaId: 'r1', nome: 'Salário', competencia: '2026-11', data: '2026-11-05', valorCentavos: 450000 },
+      {
+        receitaId: 'r1',
+        nome: 'Salário',
+        competencia: '2026-10',
+        data: '2026-10-05',
+        valorCentavos: 450000,
+      },
+      {
+        receitaId: 'r1',
+        nome: 'Salário',
+        competencia: '2026-11',
+        data: '2026-11-05',
+        valorCentavos: 450000,
+      },
     ]);
   });
 
@@ -43,7 +55,9 @@ describe('planejarRecebimentos', () => {
 
 describe('calcularSaldo', () => {
   it('calcula saldo e depois de tudo', () => {
-    expect(calcularSaldo(450000, { totalPagoCentavos: 37000, totalPendenteCentavos: 19000 })).toEqual({
+    expect(
+      calcularSaldo(450000, { totalPagoCentavos: 37000, totalPendenteCentavos: 19000 }),
+    ).toEqual({
       receitasCentavos: 450000,
       pagoCentavos: 37000,
       saldoCentavos: 413000,
