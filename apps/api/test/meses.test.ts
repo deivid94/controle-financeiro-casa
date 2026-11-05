@@ -339,7 +339,8 @@ describe('receitas e saldo no mês', () => {
 
   it('desativar e reativar no mesmo mês deixa um recebimento só em 2026-11', async () => {
     const id = await criarReceita();
-    await get('/api/meses/2026-10');
+    await get('/api/meses/2026-11');
+    expect(await prisma.recebimento.count({ where: { competencia: '2026-11' } })).toBe(1);
     await patchReceita(id, { ativa: false });
     await patchReceita(id, { ativa: true });
     const res = (await get('/api/meses/2026-11')).json();
@@ -349,7 +350,10 @@ describe('receitas e saldo no mês', () => {
 
   it('receita desativada não aparece em 2026-11', async () => {
     const id = await criarReceita();
+    await get('/api/meses/2026-11');
+    expect(await prisma.recebimento.count({ where: { competencia: '2026-11' } })).toBe(1);
     await patchReceita(id, { ativa: false });
+    expect(await prisma.recebimento.count({ where: { competencia: '2026-11' } })).toBe(0);
     const res = (await get('/api/meses/2026-11')).json();
     expect(res.receitas.itens).toHaveLength(0);
     expect(res.receitas.totalCentavos).toBe(0);

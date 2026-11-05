@@ -100,6 +100,7 @@ describe('PATCH /api/recebimentos/:id', () => {
     const { id } = (await chamar('POST', '/api/recebimentos', avulsa)).json<{ id: string }>();
     const res = await chamar('PATCH', `/api/recebimentos/${id}`, { valorCentavos: 0 });
     expect(res.statusCode).toBe(400);
+    expect(res.json().erro).toBe('VALOR_INVALIDO');
   });
 
   it('inexistente retorna 404 RECEBIMENTO_NAO_ENCONTRADO', async () => {
