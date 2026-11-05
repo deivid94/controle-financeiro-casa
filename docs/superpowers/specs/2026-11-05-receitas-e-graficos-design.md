@@ -64,7 +64,7 @@ Ordem na tela do mês (`/mes/:competencia`), de cima para baixo **[usuário: op�
 
 15. Tudo agrega **por competência** (convenção do projeto). Uma receita fixa com dia 5 conta em novembro mesmo que tenha caído dia 7.
 16. **Gastos pagos** = lançamentos `PAGA` da competência exibida. Contas `CANCELADA` nunca entram. Uma conta paga com valor nulo não vira fatia (não tem tamanho). **[Claude]**
-17. **Fatias demais** **[Claude]**: até 6 fatias por gráfico. Da 7ª em diante (ordenadas por valor desc), elas se juntam numa fatia "Outros". A legenda lista todas.
+17. **Fatias demais** **[Claude]**: no máximo 6 fatias por gráfico (uma por cor do tema). Com mais de 6 itens, ficam os 5 maiores (por valor desc) e o resto se junta numa fatia "Outros". A legenda lista todas.
 18. **Mês futuro** (mês atual + 1, o limite da navegação): as receitas fixas já aparecem (a geração vai até o próximo mês). Os gastos pagos normalmente estão vazios.
 19. **Estados vazios** **[Claude]**:
     - Sem receitas no mês: o card mostra "Nenhuma receita neste mês" e um link "Cadastrar receita" para `/nova`. Sem pizza.
