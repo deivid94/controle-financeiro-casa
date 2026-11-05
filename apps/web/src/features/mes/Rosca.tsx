@@ -33,8 +33,14 @@ export function Rosca({
               nameKey="nome"
               innerRadius="60%"
               outerRadius="100%"
-              strokeWidth={1}
+              // Linha entre as fatias na cor do card (funciona nos dois temas). O ChartContainer
+              // deixa transparente o "#fff" padrão do recharts, por isso a cor explícita.
+              // Com uma fatia só não há o que separar: o traço viraria um risco na emenda.
+              stroke={fatias.length > 1 ? 'var(--card)' : 'transparent'}
+              strokeWidth={2}
               isAnimationActive={false}
+              // O <g> do Pie entra no Tab por padrão (rootTabIndex 0) mesmo sem accessibilityLayer.
+              rootTabIndex={-1}
             />
           </PieChart>
         </ChartContainer>
@@ -45,7 +51,9 @@ export function Rosca({
 
 export function Legenda({ fatias }: { fatias: Fatia[] }) {
   return (
-    <ul className="grid gap-1">
+    // grid-cols-1 = minmax(0, 1fr): sem isso a coluna "auto" cresce até o nome inteiro
+    // (o truncate usa nowrap) e empurra os valores para fora do card.
+    <ul className="grid grid-cols-1 gap-1">
       {fatias.map((f) => (
         <li key={f.chave} className="flex items-center gap-2 text-sm">
           <span
