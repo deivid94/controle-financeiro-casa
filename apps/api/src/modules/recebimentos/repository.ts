@@ -22,6 +22,11 @@ export function atualizar(
   return prisma.recebimento.update({ where: { id }, data: dados });
 }
 
-export function excluir(id: string) {
-  return prisma.recebimento.delete({ where: { id } });
+/**
+ * Só apaga avulsa (`receitaId: null`). Com `deleteMany` um segundo DELETE concorrente
+ * não lança P2025 (como o `delete` faria): devolve `count 0`, que o service trata como 404.
+ */
+export async function excluirAvulso(id: string): Promise<boolean> {
+  const { count } = await prisma.recebimento.deleteMany({ where: { id, receitaId: null } });
+  return count > 0;
 }

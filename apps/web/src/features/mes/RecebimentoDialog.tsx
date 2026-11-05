@@ -99,7 +99,9 @@ function RecebimentoForm({ item, onFechar }: { item: RecebimentoItem; onFechar: 
             type="button"
             variant="destructive"
             disabled={pendente}
-            onClick={() => excluir.mutate(item.id, { onSuccess: onFechar })}
+            onClick={() =>
+              excluir.mutate({ id: item.id, nome: item.nome }, { onSuccess: onFechar })
+            }
           >
             Confirmar exclusão
           </Button>
@@ -112,6 +114,9 @@ function RecebimentoForm({ item, onFechar }: { item: RecebimentoItem; onFechar: 
     <form onSubmit={enviar} className="grid gap-4" noValidate>
       <DialogHeader>
         <DialogTitle>{item.nome}</DialogTitle>
+        <DialogDescription>
+          {fixa ? 'Ajuste o valor recebido neste mês.' : 'Corrija ou exclua esta receita.'}
+        </DialogDescription>
       </DialogHeader>
       {!fixa && (
         <Campo id="rec-nome" rotulo="Nome" erro={erros.nome}>

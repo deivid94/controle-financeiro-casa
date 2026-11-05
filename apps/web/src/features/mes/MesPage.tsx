@@ -36,8 +36,14 @@ function Secao({
   itens: LancamentoItem[];
   vazio?: string;
 }) {
+  // scroll-mt reserva o espaço do AppHeader sticky ao rolar até a seção (link "N contas"):
+  // 3rem do botão (size-12) + 1px da borda = 3.0625rem, mais a safe area do celular e 1rem de folga.
   return (
-    <section id={id} className="grid scroll-mt-4 gap-3" aria-label={titulo}>
+    <section
+      id={id}
+      className="grid scroll-mt-[calc(3.0625rem+env(safe-area-inset-top)+1rem)] gap-3"
+      aria-label={titulo}
+    >
       <h2 className="flex items-baseline justify-between text-base font-semibold">
         <span>{titulo}</span>
         {total !== undefined && (

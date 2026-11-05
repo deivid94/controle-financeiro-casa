@@ -33,32 +33,34 @@ export async function criar(dados: CriarReceitaInput): Promise<ReceitaView> {
  * fazer; o repository executa tudo numa única transação.
  */
 export async function editar(id: string, dados: EditarReceitaInput): Promise<ReceitaView> {
-  const receita = await repository.buscarPorId(id);
-  if (!receita) {
-    throw new AppError(404, 'RECEITA_NAO_ENCONTRADA', 'Receita não encontrada');
-  }
   const atual = competenciaAtual();
 
-  // Valor só é propagado se mudou de verdade. A troca é feita apenas nas ocorrências
-  // que ainda têm o valor ANTIGO do cadastro: quem ajustou um mês na mão (ex.: 0
-  // porque a receita não veio) não é sobrescrito.
-  const valorMudou =
-    dados.valorCentavos !== undefined && dados.valorCentavos !== receita.valorCentavos;
-  const reativando = dados.ativa === true && !receita.ativa;
+  // O repository lê a receita dentro da transação e chama esta função com ela.
+  const atualizada = await repository.atualizarComOcorrencias(id, (receita) => {
+    // Valor só é propagado se mudou de verdade. A troca é feita apenas nas ocorrências
+    // que ainda têm o valor ANTIGO do cadastro: quem ajustou um mês na mão (ex.: 0
+    // porque a receita não veio) não é sobrescrito.
+    const valorMudou =
+      dados.valorCentavos !== undefined && dados.valorCentavos !== receita.valorCentavos;
+    const reativando = dados.ativa === true && !receita.ativa;
 
-  const atualizada = await repository.atualizarComOcorrencias(id, {
-    cadastro: {
-      ...dados,
-      // Reativar recomeça a contar a partir do mês atual (não gera os meses parados).
-      ...(reativando ? { inicioCompetencia: atual } : {}),
-    },
-    competenciaAtual: atual,
-    valorAntigo: receita.valorCentavos,
-    novoValor: valorMudou ? dados.valorCentavos : undefined,
-    novoNome: dados.nome,
-    novoDia: dados.diaRecebimento,
-    // Desativar apaga só o futuro; o mês atual fica (pode já ter sido recebido).
-    apagarFuturas: dados.ativa === false,
+    return {
+      cadastro: {
+        ...dados,
+        // Reativar recomeça a contar a partir do mês atual (não gera os meses parados).
+        ...(reativando ? { inicioCompetencia: atual } : {}),
+      },
+      competenciaAtual: atual,
+      valorAntigo: receita.valorCentavos,
+      novoValor: valorMudou ? dados.valorCentavos : undefined,
+      novoNome: dados.nome,
+      novoDia: dados.diaRecebimento,
+      // Desativar apaga só o futuro; o mês atual fica (pode já ter sido recebido).
+      apagarFuturas: dados.ativa === false,
+    };
   });
+  if (!atualizada) {
+    throw new AppError(404, 'RECEITA_NAO_ENCONTRADA', 'Receita não encontrada');
+  }
   return paraView(atualizada);
 }

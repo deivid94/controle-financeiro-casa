@@ -67,5 +67,8 @@ export async function excluir(id: string): Promise<void> {
       'Ocorrência de receita fixa não pode ser excluída; desative a receita',
     );
   }
-  await repository.excluir(id);
+  // Se alguém apagou entre a leitura e aqui, vira 404 em vez de erro 500.
+  if (!(await repository.excluirAvulso(id))) {
+    throw new AppError(404, 'RECEBIMENTO_NAO_ENCONTRADO', 'Recebimento não encontrado');
+  }
 }

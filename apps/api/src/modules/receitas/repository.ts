@@ -1,4 +1,5 @@
 import { vencimentoNoMes, type CriarReceitaInput } from '@casa/shared';
+import type { Receita } from '../../generated/prisma/client.js';
 import { prisma } from '../../lib/prisma.js';
 
 /** Única camada que fala com o Prisma. Ativas primeiro, depois por nome. */
@@ -17,10 +18,6 @@ export function criar(dados: CriarReceitaInput, inicioCompetencia: string) {
   });
 }
 
-export function buscarPorId(id: string) {
-  return prisma.receita.findUnique({ where: { id } });
-}
-
 export interface PlanoDeEdicao {
   cadastro: {
     nome?: string;
@@ -37,11 +34,19 @@ export interface PlanoDeEdicao {
   apagarFuturas: boolean;
 }
 
-/** Atualiza o cadastro e as ocorrências juntos: ou tudo muda, ou nada. */
-export function atualizarComOcorrencias(id: string, plano: PlanoDeEdicao) {
-  const aPartirDeAgora = { receitaId: id, competencia: { gte: plano.competenciaAtual } };
-
+/**
+ * Atualiza o cadastro e as ocorrências juntos: ou tudo muda, ou nada.
+ * A receita é lida DENTRO da transação e o service monta o plano a partir dela
+ * (`planejar`): assim o "valor antigo" não pode ficar velho se outra edição entrar no meio.
+ * Devolve `null` se a receita não existe (o service responde 404).
+ */
+export function atualizarComOcorrencias(id: string, planejar: (receita: Receita) => PlanoDeEdicao) {
   return prisma.$transaction(async (tx) => {
+    const antiga = await tx.receita.findUnique({ where: { id } });
+    if (!antiga) return null;
+
+    const plano = planejar(antiga);
+    const aPartirDeAgora = { receitaId: id, competencia: { gte: plano.competenciaAtual } };
     const receita = await tx.receita.update({ where: { id }, data: plano.cadastro });
 
     if (plano.novoValor !== undefined) {

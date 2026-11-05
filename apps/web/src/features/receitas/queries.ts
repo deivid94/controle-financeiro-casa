@@ -49,7 +49,7 @@ function enviar<T>(metodo: 'POST' | 'PATCH', path: string, corpo: object) {
 export function useCriarReceita() {
   return useMutacaoReceita(
     (corpo: CriarReceitaInput) => enviar<ReceitaView>('POST', '/api/receitas', corpo),
-    (r) => `${r.nome} criada`,
+    (r) => `Receita criada: ${r.nome}`,
   );
 }
 
@@ -57,7 +57,7 @@ export function useEditarReceita() {
   return useMutacaoReceita(
     ({ id, dados }: { id: string; dados: EditarReceitaInput }) =>
       enviar<ReceitaView>('PATCH', `/api/receitas/${id}`, dados),
-    (r) => `${r.nome} atualizada`,
+    (r) => `Receita atualizada: ${r.nome}`,
   );
 }
 
@@ -65,7 +65,7 @@ export function useCriarRecebimento() {
   return useMutacaoReceita(
     (corpo: CriarRecebimentoAvulsoInput) =>
       enviar<RecebimentoItem>('POST', '/api/recebimentos', corpo),
-    (r) => `${r.nome} lançada`,
+    (r) => `Receita lançada: ${r.nome}`,
   );
 }
 
@@ -73,14 +73,18 @@ export function useEditarRecebimento() {
   return useMutacaoReceita(
     ({ id, dados }: { id: string; dados: EditarRecebimentoInput }) =>
       enviar<RecebimentoItem>('PATCH', `/api/recebimentos/${id}`, dados),
-    (r) => `${r.nome} atualizada`,
+    (r) => `Receita atualizada: ${r.nome}`,
   );
 }
 
 export function useExcluirRecebimento() {
   // DELETE devolve 204 sem corpo; `api()` já trata isso devolvendo `undefined`.
   return useMutacaoReceita(
-    (id: string) => api<void>(`/api/recebimentos/${id}`, { method: 'DELETE' }),
-    () => 'Recebimento excluído',
+    // O nome entra só para a mensagem do toast; o DELETE em si usa o id.
+    async ({ id, nome }: { id: string; nome: string }) => {
+      await api<void>(`/api/recebimentos/${id}`, { method: 'DELETE' });
+      return nome;
+    },
+    (nome) => `Receita excluída: ${nome}`,
   );
 }

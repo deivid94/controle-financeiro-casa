@@ -21,10 +21,12 @@ export function Rosca({
   return (
     <div role="img" aria-label={rotulo} className={cn('shrink-0', className)}>
       {fatias.length === 0 ? (
-        <div className="bg-muted size-full rounded-full [mask:radial-gradient(circle,transparent_55%,#000_56%)]" />
+        <div className="bg-muted size-full rounded-full [mask:radial-gradient(circle_closest-side,transparent_60%,#000_61%)]" />
       ) : (
         <ChartContainer config={config} className="aspect-square size-full">
-          <PieChart>
+          {/* Sem camada de acessibilidade: ela deixaria o SVG focável (Tab "vazio") dentro do
+              role="img"; a legenda em texto é a leitura acessível. */}
+          <PieChart accessibilityLayer={false}>
             <Pie
               data={fatias.map((f) => ({ ...f, fill: f.cor }))}
               dataKey="valorCentavos"

@@ -6,7 +6,11 @@ import { Legenda, Rosca } from './Rosca';
 
 function irParaAPagar(e: MouseEvent) {
   e.preventDefault();
-  document.getElementById('a-pagar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Respeita quem pediu menos movimento; `matchMedia` não existe no jsdom, daí o `?.`.
+  const reduzir = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  document
+    .getElementById('a-pagar')
+    ?.scrollIntoView({ behavior: reduzir ? 'auto' : 'smooth', block: 'start' });
 }
 
 export function GraficoGastos({

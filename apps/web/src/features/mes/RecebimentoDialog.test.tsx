@@ -116,7 +116,10 @@ describe('RecebimentoDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Excluir' }));
     expect(excluir).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Confirmar exclusão' }));
-    expect(excluir).toHaveBeenCalledWith('rc2', expect.anything());
+    expect(excluir).toHaveBeenCalledWith(
+      { id: 'rc2', nome: expect.any(String) },
+      expect.anything(),
+    );
     expect(onFechar).toHaveBeenCalled();
   });
 

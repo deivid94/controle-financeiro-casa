@@ -127,4 +127,12 @@ describe('DELETE /api/recebimentos/:id', () => {
   it('inexistente retorna 404', async () => {
     expect((await chamar('DELETE', '/api/recebimentos/nao-existe')).statusCode).toBe(404);
   });
+
+  it('apagar duas vezes o mesmo id dá 204 e depois 404', async () => {
+    const { id } = (await chamar('POST', '/api/recebimentos', avulsa)).json<{ id: string }>();
+    expect((await chamar('DELETE', `/api/recebimentos/${id}`)).statusCode).toBe(204);
+    const segundo = await chamar('DELETE', `/api/recebimentos/${id}`);
+    expect(segundo.statusCode).toBe(404);
+    expect(segundo.json().erro).toBe('RECEBIMENTO_NAO_ENCONTRADO');
+  });
 });
