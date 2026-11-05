@@ -326,5 +326,5 @@
   - O dialog "Valor deste mês" fica usável com o teclado do celular aberto?
   - Tab não para no SVG do gráfico (`accessibilityLayer={false}`)?
   - Espaçamento entre os grupos "Conta" e "Receita" em `/nova`. Receitas inativas esmaecidas na aba Contas.
-  - Nota: tela nova, ou opção errada, deve gerar um commit de correção antes do PR.
+  - Se algo falhar, corrija num commit antes de abrir o PR.
 - [ ] **Step 6:** Push da branch `feat/receitas-e-graficos` e abra o PR para `main`, com o resumo do que foi verificado no navegador (sem dados de login) e terminando com `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
