@@ -1,4 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import {
+  criarReceitaSchema,
+  criarRecebimentoAvulsoSchema,
+  editarRecebimentoSchema,
+} from './receita.js';
+import { mesViewSchema } from './views.js';
 import { criarContaSchema } from './conta.js';
 import {
   criarEsporadicaSchema,
@@ -132,5 +138,64 @@ describe('limites e segurança', () => {
   it('nomeSchema é único e exportado', () => {
     expect(nomeSchema.parse('  Luz ')).toBe('Luz');
     expect(nomeSchema.safeParse('x'.repeat(81)).success).toBe(false);
+  });
+});
+
+describe('receita', () => {
+  it('criarReceitaSchema aceita receita válida', () => {
+    expect(
+      criarReceitaSchema.safeParse({
+        nome: 'Aluguel da inquilina',
+        valorCentavos: 150000,
+        diaRecebimento: 5,
+      }).success,
+    ).toBe(true);
+  });
+
+  it('criarReceitaSchema rejeita valor 0, dia 32 e nome em branco', () => {
+    const ok = { nome: 'Aluguel', valorCentavos: 150000, diaRecebimento: 5 };
+    expect(criarReceitaSchema.safeParse({ ...ok, valorCentavos: 0 }).success).toBe(false);
+    expect(criarReceitaSchema.safeParse({ ...ok, diaRecebimento: 32 }).success).toBe(false);
+    expect(criarReceitaSchema.safeParse({ ...ok, nome: '  ' }).success).toBe(false);
+  });
+
+  it('editarRecebimentoSchema aceita valor 0 e rejeita negativo e data inválida', () => {
+    expect(editarRecebimentoSchema.safeParse({ valorCentavos: 0 }).success).toBe(true);
+    expect(editarRecebimentoSchema.safeParse({ valorCentavos: -1 }).success).toBe(false);
+    expect(editarRecebimentoSchema.safeParse({ data: '2026-02-30' }).success).toBe(false);
+  });
+
+  it('criarRecebimentoAvulsoSchema rejeita valor 0', () => {
+    expect(
+      criarRecebimentoAvulsoSchema.safeParse({
+        nome: 'Bico',
+        valorCentavos: 0,
+        data: '2026-10-10',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('mesViewSchema exige receitas e saldo', () => {
+    const semReceitas = {
+      competencia: '2026-10',
+      resumo: { totalPagoCentavos: 0, totalPendenteCentavos: 0, totalMesCentavos: 0, semValor: 0 },
+      atrasadas: { itens: [], totalCentavos: 0, semValor: 0 },
+      aPagar: [],
+      pagas: [],
+      canceladas: [],
+    };
+    expect(mesViewSchema.safeParse(semReceitas).success).toBe(false);
+    expect(
+      mesViewSchema.safeParse({
+        ...semReceitas,
+        receitas: { itens: [], totalCentavos: 0 },
+        saldo: {
+          receitasCentavos: 0,
+          pagoCentavos: 0,
+          saldoCentavos: -100,
+          depoisDeTudoCentavos: -100,
+        },
+      }).success,
+    ).toBe(true);
   });
 });

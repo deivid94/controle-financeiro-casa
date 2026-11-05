@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { competenciaSchema } from '../competencia.js';
 import { prioridadeSchema, statusSchema, tipoContaSchema } from './conta.js';
 import { dataSchema } from './lancamento.js';
+import { recebimentoItemSchema } from './receita.js';
 
 export const lancamentoItemSchema = z.object({
   id: z.string(),
@@ -44,6 +45,16 @@ export const mesViewSchema = z.object({
   aPagar: z.array(lancamentoItemSchema),
   pagas: z.array(lancamentoItemSchema),
   canceladas: z.array(lancamentoItemSchema),
+  receitas: z.object({
+    itens: z.array(recebimentoItemSchema),
+    totalCentavos: z.number().int(),
+  }),
+  saldo: z.object({
+    receitasCentavos: z.number().int(),
+    pagoCentavos: z.number().int(),
+    saldoCentavos: z.number().int(),
+    depoisDeTudoCentavos: z.number().int(),
+  }),
 });
 export type MesView = z.infer<typeof mesViewSchema>;
 
