@@ -45,10 +45,12 @@ type Props = {
   inicial?: CriarReceitaInput;
   onEnviar: (dados: CriarReceitaInput) => void;
   enviando: boolean;
+  /** Texto de apoio logo abaixo do campo Valor (usado na edição). */
+  avisoValor?: string;
 };
 
 /** Formulário de receita fixa, usado na criação e (Task 9) na edição. */
-export function ReceitaForm({ inicial, onEnviar, enviando }: Props) {
+export function ReceitaForm({ inicial, onEnviar, enviando, avisoValor }: Props) {
   const {
     register,
     handleSubmit,
@@ -78,6 +80,7 @@ export function ReceitaForm({ inicial, onEnviar, enviando }: Props) {
           aria-invalid={!!errors.valor}
           {...register('valor')}
         />
+        {avisoValor && <p className="text-muted-foreground text-sm">{avisoValor}</p>}
       </Campo>
       <Campo id="dia" rotulo="Dia do recebimento" erro={errors.dia?.message}>
         <Input

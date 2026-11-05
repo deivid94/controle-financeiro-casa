@@ -4,8 +4,10 @@ import {
   formatBRL,
   somarMeses,
   type LancamentoItem,
+  type RecebimentoItem,
 } from '@casa/shared';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
 import { buttonVariants } from '@/components/ui/button';
 import { ApiError } from '@/lib/api';
@@ -15,6 +17,7 @@ import { LancamentoCard } from './LancamentoCard';
 import { useMes } from './queries';
 import { GraficoGastos } from './GraficoGastos';
 import { GraficoReceitas } from './GraficoReceitas';
+import { RecebimentoDialog } from './RecebimentoDialog';
 import { ResumoMes } from './ResumoMes';
 import { SaldoMes } from './SaldoMes';
 
@@ -64,6 +67,7 @@ export function MesPage() {
 function MesConteudo({ competencia }: { competencia: string }) {
   const atual = competenciaAtual();
   const { data, isPending, error } = useMes(competencia);
+  const [recebimento, setRecebimento] = useState<RecebimentoItem | null>(null);
 
   const setaClasse = buttonVariants({ variant: 'ghost', size: 'icon' });
 
@@ -103,8 +107,10 @@ function MesConteudo({ competencia }: { competencia: string }) {
       {data && (
         <>
           <SaldoMes saldo={data.saldo} />
-          {/* Task 9 liga onSelecionar ao diálogo de edição do recebimento. */}
-          <GraficoReceitas receitas={data.receitas} onSelecionar={() => {}} />
+          <GraficoReceitas receitas={data.receitas} onSelecionar={setRecebimento} />
+          {recebimento && (
+            <RecebimentoDialog item={recebimento} aberto onFechar={() => setRecebimento(null)} />
+          )}
           <GraficoGastos pagas={data.pagas} aPagar={data.aPagar} resumo={data.resumo} />
           <ResumoMes resumo={data.resumo} />
           {data.atrasadas.itens.length > 0 && (

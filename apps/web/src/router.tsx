@@ -10,6 +10,7 @@ import { MesPage } from '@/features/mes/MesPage';
 import { NovaContaPage } from '@/features/nova/NovaContaPage';
 import { NovaPage } from '@/features/nova/NovaPage';
 import { NovaReceitaPage } from '@/features/receitas/NovaReceitaPage';
+import { ReceitaEditarPage } from '@/features/receitas/ReceitaEditarPage';
 import { RecebimentoAvulsoForm } from '@/features/receitas/RecebimentoAvulsoForm';
 
 export const router = createBrowserRouter([
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
       { path: '/historico', element: <HistoricoPage /> },
       { path: '/contas', element: <ContasPage /> },
       { path: '/contas/:id', element: <ContaEditarPage /> },
+      { path: '/receitas/:id', element: <ReceitaEditarPage /> },
       // Criação unificada (issue #4): /nova pergunta a frequência e leva a um dos formulários.
       { path: '/nova', element: <NovaPage /> },
       { path: '/nova/avulsa', element: <EsporadicaForm /> },

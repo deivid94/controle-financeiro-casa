@@ -1,8 +1,9 @@
-import { formatBRL, type ContaView } from '@casa/shared';
+import { formatBRL, type ContaView, type ReceitaView } from '@casa/shared';
 import { Link } from 'react-router';
 import { Card } from '@/components/ui/card';
 import { ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useReceitas } from '../receitas/queries';
 import { useContas } from './queries';
 import { ROTULO_PRIORIDADE, ROTULO_TIPO_CURTO } from './rotulos';
 
@@ -25,8 +26,22 @@ function ContaLinha({ conta }: { conta: ContaView }) {
   );
 }
 
+function ReceitaLinha({ receita }: { receita: ReceitaView }) {
+  return (
+    <Link to={`/receitas/${receita.id}`} className={cn('block', !receita.ativa && 'opacity-60')}>
+      <Card className="gap-1 p-4">
+        <span className="font-medium">{receita.nome}</span>
+        <p className="text-muted-foreground text-sm">
+          {formatBRL(receita.valorCentavos)} · dia {receita.diaRecebimento}
+        </p>
+      </Card>
+    </Link>
+  );
+}
+
 export function ContasPage() {
   const { data, isPending, error } = useContas();
+  const { data: receitas } = useReceitas();
   const ativas = data?.filter((c) => c.ativa) ?? [];
   const inativas = data?.filter((c) => !c.ativa) ?? [];
 
@@ -35,7 +50,7 @@ export function ContasPage() {
       {/* Esta aba só lista e edita as contas que se repetem; criar fica no "Nova" da barra (issue #4). */}
       <header className="grid gap-1">
         <h1 className="text-xl font-semibold">Contas</h1>
-        <p className="text-muted-foreground text-sm">Contas que se repetem todo mês.</p>
+        <p className="text-muted-foreground text-sm">Contas e receitas que se repetem todo mês.</p>
       </header>
 
       {isPending && <p className="text-muted-foreground">Carregando…</p>}
@@ -64,6 +79,14 @@ export function ContasPage() {
           <h2 className="text-base font-semibold">Inativas</h2>
           {inativas.map((c) => (
             <ContaLinha key={c.id} conta={c} />
+          ))}
+        </section>
+      )}
+      {receitas && receitas.length > 0 && (
+        <section className="grid gap-3" aria-label="Receitas fixas">
+          <h2 className="text-base font-semibold">Receitas fixas</h2>
+          {receitas.map((r) => (
+            <ReceitaLinha key={r.id} receita={r} />
           ))}
         </section>
       )}
