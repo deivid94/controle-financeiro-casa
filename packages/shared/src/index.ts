@@ -5,3 +5,4 @@ export * from './money.js';
 export * from './schemas/conta.js';
 export * from './schemas/lancamento.js';
 export * from './schemas/views.js';
+export * from './schemas/receita.js';

@@ -5,11 +5,13 @@ import {
   type HistoricoItem,
   type LancamentoItem,
   type MesView,
+  type RecebimentoItem,
 } from '@casa/shared';
 import { chaveLancamento, planejarLancamentos } from '../../domain/geracao.js';
 import { calcularParcela, compararPendentes } from '../../domain/ordenacao.js';
+import { calcularSaldo, planejarRecebimentos } from '../../domain/recebimentos.js';
 import { resumirMes } from '../../domain/resumo.js';
-import type { Lancamento } from '../../generated/prisma/client.js';
+import type { Lancamento, Recebimento } from '../../generated/prisma/client.js';
 import { AppError } from '../../plugins/error-handler.js';
 import * as repository from './repository.js';
 
@@ -24,6 +26,30 @@ export async function garantirLancamentos(ate: Competencia): Promise<void> {
   );
   const novos = planejarLancamentos(contas, chaves, ate);
   if (novos.length > 0) await repository.criarLancamentos(novos);
+}
+
+/** Gera as ocorrências das receitas fixas que faltam até `ate`. Mesma ideia de garantirLancamentos. */
+export async function garantirRecebimentos(ate: Competencia): Promise<void> {
+  const [receitas, existentes] = await Promise.all([
+    repository.listarReceitas(),
+    repository.listarChavesRecebimentos(ate),
+  ]);
+  const chaves = new Set(
+    existentes.flatMap((e) => (e.receitaId ? [chaveLancamento(e.receitaId, e.competencia)] : [])),
+  );
+  const novos = planejarRecebimentos(receitas, chaves, ate);
+  if (novos.length > 0) await repository.criarRecebimentos(novos);
+}
+
+export function recebimentoParaItem(r: Recebimento): RecebimentoItem {
+  return {
+    id: r.id,
+    receitaId: r.receitaId,
+    nome: r.nome,
+    competencia: r.competencia,
+    data: r.data,
+    valorCentavos: r.valorCentavos,
+  };
 }
 
 /** Monta os itens de vários lançamentos com um número fixo de consultas (sem N+1). */
@@ -117,11 +143,14 @@ export async function mesDe(competencia: Competencia): Promise<MesView> {
     throw new AppError(400, 'COMPETENCIA_FORA_DO_LIMITE', 'Competência além do próximo mês');
   }
 
-  await garantirLancamentos(competencia > atual ? competencia : atual);
+  const ate = competencia > atual ? competencia : atual;
+  await garantirLancamentos(ate);
+  await garantirRecebimentos(ate);
 
-  const [doMes, anteriores] = await Promise.all([
+  const [doMes, anteriores, recebimentos] = await Promise.all([
     repository.listarDaCompetencia(competencia),
     repository.listarPendentesAnteriores(competencia),
+    repository.listarRecebimentosDaCompetencia(competencia),
   ]);
   const itens = await montarItens([...doMes, ...anteriores]);
 
@@ -133,9 +162,15 @@ export async function mesDe(competencia: Competencia): Promise<MesView> {
   const canceladas = doMesItens.filter((i) => i.status === 'CANCELADA');
   const atrasadas = itens.filter((i) => i.competencia < competencia).sort(porCompetenciaEPendente);
 
+  const resumo = resumirMes(doMesItens);
+  const receitasTotal = recebimentos.reduce((soma, r) => soma + r.valorCentavos, 0);
+
   return {
     competencia,
-    resumo: resumirMes(doMesItens),
+    resumo,
+    receitas: { itens: recebimentos.map(recebimentoParaItem), totalCentavos: receitasTotal },
+    // Tudo por competência: o saldo do mês usa só os lançamentos e receitas deste mês.
+    saldo: calcularSaldo(receitasTotal, resumo),
     atrasadas: {
       itens: atrasadas,
       totalCentavos: atrasadas.reduce((soma, i) => soma + (i.valorCentavos ?? 0), 0),

@@ -7,6 +7,8 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { contasRoutes } from './modules/contas/routes.js';
 import { mesesRoutes } from './modules/meses/routes.js';
 import { lancamentosRoutes } from './modules/lancamentos/routes.js';
+import { recebimentosRoutes } from './modules/recebimentos/routes.js';
+import { receitasRoutes } from './modules/receitas/routes.js';
 import { registrarAuth } from './plugins/auth.js';
 import { registrarErrorHandler } from './plugins/error-handler.js';
 
@@ -23,6 +25,8 @@ export function buildApp(opts: { logger?: boolean } = {}): Promise<FastifyInstan
   void app.register(contasRoutes);
   void app.register(mesesRoutes);
   void app.register(lancamentosRoutes);
+  void app.register(receitasRoutes);
+  void app.register(recebimentosRoutes);
 
   return Promise.resolve(app);
 }

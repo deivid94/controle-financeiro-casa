@@ -1,15 +1,15 @@
-import { CalendarDays, Layers, Repeat, type LucideIcon } from 'lucide-react';
+import { CalendarDays, Layers, Repeat, TrendingUp, Wallet, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router';
 import { Card } from '@/components/ui/card';
 
 type Opcao = { to: string; titulo: string; descricao: string; Icone: LucideIcon };
 
 /**
- * Ponto único de criação (issue #4). Em vez de dois botões na barra ("Lançar" e
- * "Contas") que pareciam fazer a mesma coisa, a pessoa responde uma pergunta só:
- * com que frequência a conta aparece. Cada resposta leva ao formulário que já existia.
+ * Ponto único de criação (issue #4). Em vez de botões na barra que pareciam fazer a mesma
+ * coisa, a pessoa responde uma pergunta só: o que quer lançar. Contas se distinguem pela
+ * frequência; receitas são fixas (todo mês) ou só deste mês. Cada resposta leva ao formulário.
  */
-const OPCOES: Opcao[] = [
+const OPCOES_CONTA: Opcao[] = [
   {
     to: '/nova/avulsa',
     titulo: 'Só este mês',
@@ -30,12 +30,35 @@ const OPCOES: Opcao[] = [
   },
 ];
 
-export function NovaPage() {
+const OPCOES_RECEITA: Opcao[] = [
+  {
+    to: '/nova/receita',
+    titulo: 'Receita fixa',
+    descricao: 'Aluguel, salário. Entra sozinha todo mês.',
+    Icone: TrendingUp,
+  },
+  {
+    to: '/nova/receita-avulsa',
+    titulo: 'Receita só deste mês',
+    descricao: 'Uma venda, um extra. Conta só no mês em que entrou.',
+    Icone: Wallet,
+  },
+];
+
+function Grupo({
+  subtitulo,
+  rotuloNav,
+  opcoes,
+}: {
+  subtitulo: string;
+  rotuloNav: string;
+  opcoes: Opcao[];
+}) {
   return (
-    <div className="grid gap-4">
-      <h1 className="text-xl font-semibold">Com que frequência?</h1>
-      <nav className="grid gap-3" aria-label="Tipo de conta">
-        {OPCOES.map(({ to, titulo, descricao, Icone }) => (
+    <section className="grid gap-3">
+      <h2 className="text-muted-foreground text-sm font-medium">{subtitulo}</h2>
+      <nav className="grid gap-3" aria-label={rotuloNav}>
+        {opcoes.map(({ to, titulo, descricao, Icone }) => (
           <Link key={to} to={to} className="block">
             <Card className="flex-row items-center gap-4 p-4">
               <Icone className="text-muted-foreground size-6 shrink-0" aria-hidden />
@@ -47,6 +70,16 @@ export function NovaPage() {
           </Link>
         ))}
       </nav>
+    </section>
+  );
+}
+
+export function NovaPage() {
+  return (
+    <div className="grid gap-6">
+      <h1 className="text-xl font-semibold">O que você quer lançar?</h1>
+      <Grupo subtitulo="Conta" rotuloNav="Tipo de conta" opcoes={OPCOES_CONTA} />
+      <Grupo subtitulo="Receita" rotuloNav="Tipo de receita" opcoes={OPCOES_RECEITA} />
     </div>
   );
 }

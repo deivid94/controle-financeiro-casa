@@ -264,3 +264,98 @@ describe('GET /api/meses/:competencia', () => {
     expect(res.pagas[0].pagoPor).toEqual({ id: usuario.id, nome: usuario.name });
   });
 });
+
+describe('receitas e saldo no mês', () => {
+  const criarReceita = async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/receitas',
+      headers: { cookie },
+      payload: { nome: 'Salário', valorCentavos: 150000, diaRecebimento: 5 },
+    });
+    expect(res.statusCode).toBe(201);
+    return res.json<{ id: string }>().id;
+  };
+  const patchReceita = (id: string, payload: object) =>
+    app.inject({ method: 'PATCH', url: `/api/receitas/${id}`, headers: { cookie }, payload });
+  const esporadica = (vencimento: string, valorCentavos: number) =>
+    app.inject({
+      method: 'POST',
+      url: '/api/lancamentos',
+      headers: { cookie },
+      payload: { nome: 'Conta', prioridade: 'NORMAL', vencimento, valorCentavos },
+    });
+  const pagar = (id: string) =>
+    app.inject({
+      method: 'POST',
+      url: `/api/lancamentos/${id}/pagar`,
+      headers: { cookie },
+      payload: {},
+    });
+
+  it('receita fixa aparece no mês com total', async () => {
+    await criarReceita();
+    const res = (await get('/api/meses/2026-10')).json();
+    expect(res.receitas.totalCentavos).toBe(150000);
+    expect(res.receitas.itens).toHaveLength(1);
+    expect(res.receitas.itens[0]).toMatchObject({ nome: 'Salário', data: '2026-10-05' });
+  });
+
+  it('calcula o saldo com uma conta paga e uma pendente', async () => {
+    await criarReceita();
+    const paga = (await esporadica('2026-10-12', 37000)).json<{ id: string }>();
+    await esporadica('2026-10-25', 19000);
+    expect((await pagar(paga.id)).statusCode).toBe(200);
+    const res = (await get('/api/meses/2026-10')).json();
+    expect(res.saldo).toEqual({
+      receitasCentavos: 150000,
+      pagoCentavos: 37000,
+      saldoCentavos: 113000,
+      depoisDeTudoCentavos: 94000,
+    });
+  });
+
+  it('GETs paralelos de dois usuários não duplicam a ocorrência', async () => {
+    await criarReceita();
+    const cookie2 = await loginComo(app, 2);
+    const [a, b] = await Promise.all([
+      get('/api/meses/2026-10'),
+      get('/api/meses/2026-10', { cookie: cookie2 }),
+    ]);
+    expect(a.statusCode).toBe(200);
+    expect(b.statusCode).toBe(200);
+    // A geração vai até o mês pedido (mesmo limite dos lançamentos): só 2026-10.
+    expect(await prisma.recebimento.count()).toBe(1);
+  });
+
+  it('conta de setembro paga hoje entra no saldo de setembro, não no de outubro', async () => {
+    const conta = (await esporadica('2026-09-10', 20000)).json<{ id: string }>();
+    expect((await pagar(conta.id)).statusCode).toBe(200);
+    const set = (await get('/api/meses/2026-09')).json();
+    const out = (await get('/api/meses/2026-10')).json();
+    expect(set.saldo.pagoCentavos).toBe(20000);
+    expect(out.saldo.pagoCentavos).toBe(0);
+  });
+
+  it('desativar e reativar no mesmo mês deixa um recebimento só em 2026-11', async () => {
+    const id = await criarReceita();
+    await get('/api/meses/2026-11');
+    expect(await prisma.recebimento.count({ where: { competencia: '2026-11' } })).toBe(1);
+    await patchReceita(id, { ativa: false });
+    await patchReceita(id, { ativa: true });
+    const res = (await get('/api/meses/2026-11')).json();
+    expect(res.receitas.itens).toHaveLength(1);
+    expect(await prisma.recebimento.count({ where: { competencia: '2026-11' } })).toBe(1);
+  });
+
+  it('receita desativada não aparece em 2026-11', async () => {
+    const id = await criarReceita();
+    await get('/api/meses/2026-11');
+    expect(await prisma.recebimento.count({ where: { competencia: '2026-11' } })).toBe(1);
+    await patchReceita(id, { ativa: false });
+    expect(await prisma.recebimento.count({ where: { competencia: '2026-11' } })).toBe(0);
+    const res = (await get('/api/meses/2026-11')).json();
+    expect(res.receitas.itens).toHaveLength(0);
+    expect(res.receitas.totalCentavos).toBe(0);
+  });
+});
